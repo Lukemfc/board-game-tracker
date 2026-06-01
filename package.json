@@ -1,0 +1,34 @@
+{
+  "name": "meeple-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Meeple Ledger — a deployed, collaborative board-game-night tracker (Discord bot + REST API).",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.5.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @meeple/backend test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev": "pnpm --filter @meeple/shared build && pnpm -r --parallel dev",
+    "dev:backend": "pnpm --filter @meeple/shared build && pnpm --filter @meeple/backend dev",
+    "dev:bot": "pnpm --filter @meeple/shared build && pnpm --filter @meeple/bot dev",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.12.2"
+  }
+}

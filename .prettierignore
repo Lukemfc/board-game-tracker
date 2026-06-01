@@ -1,0 +1,7 @@
+**/dist/**
+**/node_modules/**
+**/.prisma/**
+**/generated/**
+packages/backend/prisma/migrations/**
+pnpm-lock.yaml
+PLAN.md

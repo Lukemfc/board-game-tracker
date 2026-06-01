@@ -1,0 +1,44 @@
+{
+  "name": "@meeple/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/server.js",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts",
+    "import:xlsx": "tsx src/scripts/import-xlsx.ts",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@meeple/shared": "workspace:*",
+    "@prisma/client": "^6.1.0",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.1.0",
+    "fastify-type-provider-zod": "^4.0.2",
+    "pino": "^9.5.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.0",
+    "pino-pretty": "^13.0.0",
+    "prisma": "^6.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

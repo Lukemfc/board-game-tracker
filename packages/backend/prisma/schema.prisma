@@ -1,0 +1,65 @@
+// Meeple Ledger — Prisma schema
+// See PLAN.md §4 for the data model rationale.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id              String          @id @default(cuid())
+  displayName     String
+  discordUserId   String?         @unique
+  createdAt       DateTime        @default(now())
+  participations  SessionPlayer[]
+  createdSessions Session[]       @relation("CreatedBy")
+}
+
+model Game {
+  id         String    @id @default(cuid())
+  name       String    @unique
+  bggId      Int? // BoardGameGeek id, for future enrichment
+  minPlayers Int?
+  maxPlayers Int?
+  createdAt  DateTime  @default(now())
+  sessions   Session[]
+}
+
+model Location {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  sessions Session[]
+}
+
+model Session {
+  id          String          @id @default(cuid())
+  playedOn    DateTime // the date the game was played
+  game        Game            @relation(fields: [gameId], references: [id])
+  gameId      String
+  location    Location?       @relation(fields: [locationId], references: [id])
+  locationId  String?
+  notes       String?
+  createdBy   Player?         @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String?
+  createdAt   DateTime        @default(now())
+  players     SessionPlayer[]
+
+  @@index([gameId])
+  @@index([playedOn])
+}
+
+model SessionPlayer {
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  player    Player  @relation(fields: [playerId], references: [id])
+  playerId  String
+  isWinner  Boolean @default(false)
+  score     Int?
+
+  @@id([sessionId, playerId])
+  @@index([playerId])
+}

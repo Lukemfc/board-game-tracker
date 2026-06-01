@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: meeple
+          POSTGRES_PASSWORD: meeple
+          POSTGRES_DB: meeple
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meeple -d meeple"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Used by the backend test suite (global-setup + Prisma client).
+      TEST_DATABASE_URL: postgresql://meeple:meeple@localhost:5432/meeple?schema=meeple_test
+      # Used by `prisma generate` / `prisma validate`.
+      DATABASE_URL: postgresql://meeple:meeple@localhost:5432/meeple?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @meeple/backend exec prisma generate
+
+      - name: Validate Prisma schema
+        run: pnpm --filter @meeple/backend exec prisma validate
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Test
+        run: pnpm test

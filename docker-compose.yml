@@ -1,0 +1,23 @@
+# Local Postgres for development. Production uses managed Postgres (see PLAN.md §10).
+services:
+  postgres:
+    image: postgres:16
+    container_name: meeple-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: meeple
+      POSTGRES_PASSWORD: meeple
+      POSTGRES_DB: meeple
+    ports:
+      # Host 5433 -> container 5432 (host 5432 is often already in use).
+      - '5433:5432'
+    volumes:
+      - meeple_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U meeple -d meeple']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  meeple_pgdata:

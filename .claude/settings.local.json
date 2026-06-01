@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm -v)",
+      "Bash(docker -v)",
+      "Read(//Users/lukeharland/.nvm/versions/node/**)",
+      "Bash(npm -v)",
+      "Read(//opt/homebrew/**)"
+    ]
+  }
+}
