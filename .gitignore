@@ -25,3 +25,5 @@ npm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+/Board-Game-History.xlsx
