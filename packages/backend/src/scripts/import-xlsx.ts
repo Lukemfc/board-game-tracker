@@ -15,10 +15,10 @@ import { prisma } from '../prisma.js';
 // --- Configure to match your spreadsheet -----------------------------------
 const COLUMNS = {
   date: 'Date',
-  game: 'Game',
-  location: 'Where',
-  players: 'Who played',
-  winners: 'Who won',
+  game: 'Board Game',
+  location: 'Venue',
+  players: 'Players',
+  winners: 'Winner',
   notes: 'Notes',
 } as const;
 
