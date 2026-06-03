@@ -97,8 +97,9 @@ See [.env.example](.env.example). Summary:
 2. Dry run, then import for real (idempotent — safe to re-run):
 
 ```bash
-pnpm --filter @meeple/backend import:xlsx /path/to/plays.xlsx --dry-run
-pnpm --filter @meeple/backend import:xlsx /path/to/plays.xlsx
+# Use an ABSOLUTE path; the `--` passes flags to the script (not pnpm).
+pnpm --filter @meeple/backend run import:xlsx -- /abs/path/to/plays.xlsx --dry-run
+pnpm --filter @meeple/backend run import:xlsx -- /abs/path/to/plays.xlsx
 ```
 
 ## Deployment (Railway shown; Render/Fly equivalent)

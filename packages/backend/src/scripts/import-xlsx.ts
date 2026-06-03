@@ -1,8 +1,8 @@
 /**
  * One-off importer for the historical board-game spreadsheet (PLAN.md §5).
  *
- * Usage:
- *   pnpm --filter @meeple/backend import:xlsx <path-to.xlsx> [--dry-run] [--sheet=Name]
+ * Usage (omit the angle/square brackets — they denote placeholders/optionals):
+ *   pnpm --filter @meeple/backend run import:xlsx -- /abs/path.xlsx [--dry-run] [--sheet=Name]
  *
  * Idempotent: a session is identified by (game, day, set of player names), so
  * re-running imports nothing new. Adjust COLUMNS / PLAYER_SEPARATOR below to
@@ -71,7 +71,9 @@ async function main() {
   const filePath = args.find((a) => !a.startsWith('--'));
 
   if (!filePath) {
-    console.error('Usage: import <path-to.xlsx> [--dry-run] [--sheet=Name]');
+    console.error(
+      'Usage: pnpm --filter @meeple/backend run import:xlsx -- /abs/path.xlsx [--dry-run] [--sheet=Name]',
+    );
     process.exit(1);
   }
   if (!existsSync(filePath)) {
