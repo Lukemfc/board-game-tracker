@@ -1,4 +1,4 @@
-import type { UpdateSessionInput } from '@meeple/shared';
+import type { SessionDto, UpdateSessionInput } from '@meeple/shared';
 import {
   ActionRowBuilder,
   MessageFlags,
@@ -23,6 +23,11 @@ import {
 export const EDITSESSION_SELECT_ID = 'editsession_select';
 export const EDITSESSION_MODAL_PREFIX = 'editsession_modal_';
 
+// Cache sessions from the most recent listSessions call so the select handler
+// can build the modal with no async gap before showModal() — required because
+// showModal() must be the first and immediate response to a component interaction.
+const sessionCache = new Map<string, SessionDto>();
+
 function fmtDate(iso: string): string {
   const [y, m, d] = iso.slice(0, 10).split('-');
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -43,6 +48,8 @@ const editsession: BotCommand = {
         await interaction.editReply({ content: 'No sessions found to edit.' });
         return;
       }
+
+      for (const s of sessions) sessionCache.set(s.id, s);
 
       const select = new StringSelectMenuBuilder()
         .setCustomId(EDITSESSION_SELECT_ID)
@@ -71,12 +78,12 @@ export async function handleEditSessionSelect(
   const sessionId = interaction.values[0];
   if (!sessionId) return;
 
-  // Must call showModal() synchronously as the first response — fetch session before that.
-  let session;
-  try {
-    session = await api.getSession(sessionId);
-  } catch (err) {
-    await interaction.reply({ content: `⚠️ ${errorMessage(err)}`, flags: MessageFlags.Ephemeral });
+  const session = sessionCache.get(sessionId);
+  if (!session) {
+    await interaction.reply({
+      content: '⚠️ Session not found in cache. Please run `/editsession` again.',
+      flags: MessageFlags.Ephemeral,
+    });
     return;
   }
 

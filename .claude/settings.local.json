@@ -5,7 +5,8 @@
       "Bash(docker -v)",
       "Read(//Users/lukeharland/.nvm/versions/node/**)",
       "Bash(npm -v)",
-      "Read(//opt/homebrew/**)"
+      "Read(//opt/homebrew/**)",
+      "Bash(pnpm *)"
     ]
   }
 }
