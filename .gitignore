@@ -27,3 +27,6 @@ npm-debug.log*
 !.vscode/extensions.json
 
 /Board-Game-History.xlsx
+.claude
+.agents
+skills-lock.json
