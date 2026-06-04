@@ -19,10 +19,10 @@ Let players use BoardGameGeek (BGG) as the source of truth for game data, so nob
 
 BGG provides a free, no-auth-required XML API.
 
-| Purpose | Endpoint |
-|---------|----------|
-| Search games | `https://boardgamegeek.com/xmlapi2/search?query=<name>&type=boardgame` |
-| Game details | `https://boardgamegeek.com/xmlapi2/thing?id=<bggId>&stats=1` |
+| Purpose         | Endpoint                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| Search games    | `https://boardgamegeek.com/xmlapi2/search?query=<name>&type=boardgame`                     |
+| Game details    | `https://boardgamegeek.com/xmlapi2/thing?id=<bggId>&stats=1`                               |
 | User collection | `https://boardgamegeek.com/xmlapi2/collection?username=<username>&own=1&subtype=boardgame` |
 
 **Important quirk:** The collection endpoint sometimes returns HTTP `202 Accepted` (request queued). The client must poll until it gets `200`. Implement a retry loop with a 2-second delay, up to ~5 attempts.

@@ -18,10 +18,10 @@ A `/suggest` Discord command that recommends games from the catalogue based on w
 /suggest [players:@alice @bob @charlie] [count:4]
 ```
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `players` | Mention string | No | Who's playing tonight. If omitted, uses the full player roster. |
-| `count` | Integer (1–6) | No | Number of suggestions to return. Default 3. |
+| Option    | Type           | Required | Description                                                     |
+| --------- | -------------- | -------- | --------------------------------------------------------------- |
+| `players` | Mention string | No       | Who's playing tonight. If omitted, uses the full player roster. |
+| `count`   | Integer (1–6)  | No       | Number of suggestions to return. Default 3.                     |
 
 The command replies with a public embed listing the top suggestions, each with a one-line reason.
 
@@ -33,11 +33,11 @@ The command replies with a public embed listing the top suggestions, each with a
 GET /stats/suggest?playerCount=<n>&playerIds=<id1,id2,...>&limit=<n>
 ```
 
-| Query param | Required | Description |
-|-------------|----------|-------------|
-| `playerCount` | No | Filter by player count (uses `minPlayers`/`maxPlayers` on Game). Falls back to `playerIds` length if provided. |
-| `playerIds` | No | Comma-separated Player IDs. Used for recency and "who hasn't won" checks. |
-| `limit` | No | Number of results to return. Default 5. |
+| Query param   | Required | Description                                                                                                    |
+| ------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `playerCount` | No       | Filter by player count (uses `minPlayers`/`maxPlayers` on Game). Falls back to `playerIds` length if provided. |
+| `playerIds`   | No       | Comma-separated Player IDs. Used for recency and "who hasn't won" checks.                                      |
+| `limit`       | No       | Number of results to return. Default 5.                                                                        |
 
 **Response:**
 
@@ -67,6 +67,7 @@ The endpoint computes a **suggestion score** for every game in the catalogue, th
 ### Step 1: Gather data
 
 For each game, fetch:
+
 - `lastPlayedAt` — date of the most recent session for this game (or `null` if never played).
 - `totalPlays` — total number of sessions ever.
 - `recentWinners` — for each player in `playerIds`, whether they've won this game in the last 90 days.
@@ -82,10 +83,12 @@ score = recencyScore + varietyBonus + neverWonBonus
 ```
 
 **Recency score** (0–100): How long since the game was last played.
+
 ```
 daysSinceLastPlayed = today - lastPlayedAt   (or 365 if never played)
 recencyScore = min(daysSinceLastPlayed, 180) / 180 * 100
 ```
+
 - A game played today scores 0. A game not played for 6+ months scores 100. Never-played games are treated as 365 days.
 
 **Variety bonus** (+30): Applied if the game has been played fewer than 3 times ever. Encourages trying new additions to the catalogue.
@@ -97,6 +100,7 @@ recencyScore = min(daysSinceLastPlayed, 180) / 180 * 100
 ### Step 4: Build reasons
 
 For each suggestion, build a human-readable reason list (max 2 reasons):
+
 1. Recency: `"Last played X days ago"` / `"Never played"` / `"Played once"` etc.
 2. Never-won: `"<Name> has never won this"` (only if `playerIds` were provided and the never-won bonus fired).
 
@@ -151,7 +155,7 @@ React with 🎲 on the one you want to play!
 
 ## Notes & decisions
 
-- **No ML/AI required.** The scoring is deterministic and transparent. Users can see *why* a game was suggested, which builds trust in the feature.
+- **No ML/AI required.** The scoring is deterministic and transparent. Users can see _why_ a game was suggested, which builds trust in the feature.
 - **Scores are not shown to users.** Only the reasons are shown; scores are internal.
 - **The never-won bonus does not require all players in `playerIds` to have never won** — it fires per player. One player who's never won adds 20 points; three players add 60.
 - **Future extension:** once score tracking is live, add a "close games" signal — games where the winning margin was small tend to be more exciting. Not in scope now.

@@ -30,7 +30,20 @@ const sessionCache = new Map<string, SessionDto>();
 
 function fmtDate(iso: string): string {
   const [y, m, d] = iso.slice(0, 10).split('-');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return `${d} ${months[Number(m) - 1]} ${y}`;
 }
 
@@ -142,9 +155,7 @@ export async function handleEditSessionSelect(
   await interaction.showModal(modal);
 }
 
-export async function handleEditSessionModal(
-  interaction: ModalSubmitInteraction,
-): Promise<void> {
+export async function handleEditSessionModal(interaction: ModalSubmitInteraction): Promise<void> {
   const sessionId = interaction.customId.slice(EDITSESSION_MODAL_PREFIX.length);
 
   const game = interaction.fields.getTextInputValue('game').trim();
@@ -182,7 +193,10 @@ export async function handleEditSessionModal(
     };
 
     const updated = await api.updateSession(sessionId, patch);
-    await interaction.editReply({ content: '✅ Session updated!', embeds: [sessionEmbed(updated)] });
+    await interaction.editReply({
+      content: '✅ Session updated!',
+      embeds: [sessionEmbed(updated)],
+    });
   } catch (err) {
     await interaction.editReply({ content: `⚠️ ${errorMessage(err)}` });
   }

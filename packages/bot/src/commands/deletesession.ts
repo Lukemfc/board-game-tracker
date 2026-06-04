@@ -19,7 +19,20 @@ export const DELETESESSION_CANCEL_PREFIX = 'deletesession_cancel_';
 
 function fmtDate(iso: string): string {
   const [y, m, d] = iso.slice(0, 10).split('-');
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return `${d} ${months[Number(m) - 1]} ${y}`;
 }
 
@@ -102,9 +115,7 @@ export async function handleDeleteSessionSelect(
   }
 }
 
-export async function handleDeleteSessionButton(
-  interaction: ButtonInteraction,
-): Promise<void> {
+export async function handleDeleteSessionButton(interaction: ButtonInteraction): Promise<void> {
   const isConfirm = interaction.customId.startsWith(DELETESESSION_CONFIRM_PREFIX);
   const sessionId = isConfirm
     ? interaction.customId.slice(DELETESESSION_CONFIRM_PREFIX.length)

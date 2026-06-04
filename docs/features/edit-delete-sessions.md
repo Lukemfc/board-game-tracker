@@ -39,14 +39,14 @@ Each option value: the session `id`.
 
 When the user picks a session, the bot opens a **Discord modal** with the following text inputs, pre-filled with the current values:
 
-| Field | Input type | Pre-filled with |
-|-------|------------|-----------------|
-| Game name | Short text | `session.game.name` |
-| Winner(s) | Short text | Comma-separated display names, e.g. `Alice, Bob` |
-| Players | Short text | Comma-separated display names |
-| Date (YYYY-MM-DD) | Short text | `session.playedOn` formatted |
-| Location | Short text | `session.location.name` or blank |
-| Notes | Paragraph | `session.notes` or blank |
+| Field             | Input type | Pre-filled with                                  |
+| ----------------- | ---------- | ------------------------------------------------ |
+| Game name         | Short text | `session.game.name`                              |
+| Winner(s)         | Short text | Comma-separated display names, e.g. `Alice, Bob` |
+| Players           | Short text | Comma-separated display names                    |
+| Date (YYYY-MM-DD) | Short text | `session.playedOn` formatted                     |
+| Location          | Short text | `session.location.name` or blank                 |
+| Notes             | Paragraph  | `session.notes` or blank                         |
 
 ### Step 3: Submit
 
@@ -57,6 +57,7 @@ On modal submit:
 3. Reply with an ephemeral confirmation embed showing the updated session.
 
 **Validation:**
+
 - All winner names must appear in the players list. If not, reject with a clear error: "Winner 'Dave' is not in the players list."
 - Date must parse as a valid date. If not, reject: "Invalid date. Use YYYY-MM-DD format."
 
@@ -106,6 +107,7 @@ Both commands use Discord's component interaction system (select menus, modals, 
 4. A `buttonHandler` for the delete confirmation buttons.
 
 Use a consistent custom ID naming convention:
+
 - Select menu: `editsession_select`, `deletesession_select`
 - Modal: `editsession_modal_<sessionId>`
 - Buttons: `deletesession_confirm_<sessionId>`, `deletesession_cancel_<sessionId>`
