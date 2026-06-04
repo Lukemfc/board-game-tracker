@@ -17,6 +17,7 @@ import {
   type SessionDto,
   sessionDto,
   sessionList,
+  type UpdateSessionInput,
 } from '@meeple/shared';
 import type { z } from 'zod';
 import { config } from './config.js';
@@ -87,12 +88,49 @@ class ApiClient {
     return schema.parse(await res.json());
   }
 
+  private async requestVoid(path: string, opts: RequestOptions = {}): Promise<void> {
+    const url = new URL(path, this.baseUrl);
+    const headers: Record<string, string> = { authorization: `Bearer ${this.apiKey}` };
+    if (opts.body !== undefined) headers['content-type'] = 'application/json';
+    if (opts.discordUserId) headers['x-discord-user-id'] = opts.discordUserId;
+    const res = await fetch(url, {
+      method: opts.method ?? 'GET',
+      headers,
+      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+    });
+    if (!res.ok) {
+      let message = `Request failed (${res.status})`;
+      try {
+        const data = (await res.json()) as { message?: string };
+        if (data?.message) message = data.message;
+      } catch {
+        // non-JSON error body
+      }
+      throw new ApiError(res.status, message);
+    }
+  }
+
   createSession(input: CreateSessionInput, discordUserId: string): Promise<SessionDto> {
     return this.request(sessionDto, '/sessions', { method: 'POST', body: input, discordUserId });
   }
 
   listSessions(filters: SessionFilters = {}): Promise<SessionDto[]> {
     return this.request(sessionList, '/sessions', { query: { ...filters } });
+  }
+
+  getSession(id: string): Promise<SessionDto> {
+    return this.request(sessionDto, `/sessions/${encodeURIComponent(id)}`);
+  }
+
+  updateSession(id: string, input: UpdateSessionInput): Promise<SessionDto> {
+    return this.request(sessionDto, `/sessions/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: input,
+    });
+  }
+
+  deleteSession(id: string): Promise<void> {
+    return this.requestVoid(`/sessions/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 
   listGames(): Promise<GameDto[]> {
