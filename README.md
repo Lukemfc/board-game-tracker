@@ -20,7 +20,7 @@ TypeScript · pnpm workspaces · Fastify + Zod · Prisma + PostgreSQL · discord
 
 ## Prerequisites
 
-- **Node 20+** and **pnpm** (`corepack enable`)
+- **Node 22.13+** and **pnpm** (`corepack enable`)
 - **Docker** (for local Postgres) — or any Postgres you point `DATABASE_URL` at
 - A **Discord application + bot token** (see [Discord setup](#discord-setup))
 

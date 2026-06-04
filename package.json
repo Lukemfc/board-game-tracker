@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Meeple Ledger — a deployed, collaborative board-game-night tracker (Discord bot + REST API).",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13"
   },
   "packageManager": "pnpm@11.5.0",
   "scripts": {
