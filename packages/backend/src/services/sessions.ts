@@ -74,25 +74,28 @@ export async function createSession(
   input: CreateSessionInput,
   actingDiscordUserId?: string,
 ): Promise<SessionWithRelations> {
-  const created = await prisma.$transaction(async (tx) => {
-    const game = await upsertGameByName(tx, input.game);
-    const location = input.location ? await upsertLocationByName(tx, input.location) : null;
-    const actor = await resolveActor(tx, actingDiscordUserId);
-    const rows = await buildSessionPlayerRows(tx, input.players);
+  const created = await prisma.$transaction(
+    async (tx) => {
+      const game = await upsertGameByName(tx, input.game);
+      const location = input.location ? await upsertLocationByName(tx, input.location) : null;
+      const actor = await resolveActor(tx, actingDiscordUserId);
+      const rows = await buildSessionPlayerRows(tx, input.players);
 
-    const session = await tx.session.create({
-      data: {
-        playedOn: input.playedOn ? new Date(input.playedOn) : new Date(),
-        gameId: game.id,
-        locationId: location?.id ?? null,
-        notes: input.notes ?? null,
-        createdById: actor?.id ?? null,
-        players: { create: rows },
-      },
-      include: sessionInclude,
-    });
-    return session;
-  });
+      const session = await tx.session.create({
+        data: {
+          playedOn: input.playedOn ? new Date(input.playedOn) : new Date(),
+          gameId: game.id,
+          locationId: location?.id ?? null,
+          notes: input.notes ?? null,
+          createdById: actor?.id ?? null,
+          players: { create: rows },
+        },
+        include: sessionInclude,
+      });
+      return session;
+    },
+    { timeout: 15000 },
+  );
   return created;
 }
 
@@ -134,38 +137,41 @@ export async function updateSession(
   id: string,
   input: UpdateSessionInput,
 ): Promise<SessionWithRelations> {
-  return prisma.$transaction(async (tx) => {
-    const existing = await tx.session.findUnique({ where: { id } });
-    if (!existing) throw notFound('session');
+  return prisma.$transaction(
+    async (tx) => {
+      const existing = await tx.session.findUnique({ where: { id } });
+      if (!existing) throw notFound('session');
 
-    const data: Prisma.SessionUpdateInput = {};
-    if (input.playedOn !== undefined) data.playedOn = new Date(input.playedOn);
-    if (input.notes !== undefined) data.notes = input.notes;
-    if (input.game !== undefined) {
-      const game = await upsertGameByName(tx, input.game);
-      data.game = { connect: { id: game.id } };
-    }
-    if (input.location !== undefined) {
-      data.location =
-        input.location === null
-          ? { disconnect: true }
-          : { connect: { id: (await upsertLocationByName(tx, input.location)).id } };
-    }
+      const data: Prisma.SessionUpdateInput = {};
+      if (input.playedOn !== undefined) data.playedOn = new Date(input.playedOn);
+      if (input.notes !== undefined) data.notes = input.notes;
+      if (input.game !== undefined) {
+        const game = await upsertGameByName(tx, input.game);
+        data.game = { connect: { id: game.id } };
+      }
+      if (input.location !== undefined) {
+        data.location =
+          input.location === null
+            ? { disconnect: true }
+            : { connect: { id: (await upsertLocationByName(tx, input.location)).id } };
+      }
 
-    await tx.session.update({ where: { id }, data });
+      await tx.session.update({ where: { id }, data });
 
-    if (input.players !== undefined) {
-      const rows = await buildSessionPlayerRows(tx, input.players);
-      await tx.sessionPlayer.deleteMany({ where: { sessionId: id } });
-      await tx.sessionPlayer.createMany({
-        data: rows.map((r) => ({ ...r, sessionId: id })),
-      });
-    }
+      if (input.players !== undefined) {
+        const rows = await buildSessionPlayerRows(tx, input.players);
+        await tx.sessionPlayer.deleteMany({ where: { sessionId: id } });
+        await tx.sessionPlayer.createMany({
+          data: rows.map((r) => ({ ...r, sessionId: id })),
+        });
+      }
 
-    const updated = await getById(tx, id);
-    if (!updated) throw notFound('session');
-    return updated;
-  });
+      const updated = await getById(tx, id);
+      if (!updated) throw notFound('session');
+      return updated;
+    },
+    { timeout: 15000 },
+  );
 }
 
 export async function deleteSession(id: string): Promise<void> {
