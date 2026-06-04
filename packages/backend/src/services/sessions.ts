@@ -22,7 +22,7 @@ async function resolvePlayer(tx: Tx, input: SessionPlayerInput) {
   if (input.discordUserId) {
     return tx.player.upsert({
       where: { discordUserId: input.discordUserId },
-      update: input.name ? { displayName: input.name } : {},
+      update: {},
       create: {
         discordUserId: input.discordUserId,
         displayName: input.name ?? input.discordUserId,
