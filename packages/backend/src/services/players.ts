@@ -1,6 +1,9 @@
 import type { LinkPlayerInput } from '@meeple/shared';
 import type { PlayerRecord } from '../db.js';
+import { badRequest, notFound } from '../errors.js';
 import { prisma } from '../prisma.js';
+import { findPlayerByIdOrDiscord } from './resolve.js';
+import { collectionExists } from './bgg.js';
 
 /**
  * Link a Discord account to a player profile (`/linkme`):
@@ -25,4 +28,27 @@ export async function linkPlayer({
 
     return tx.player.create({ data: { displayName, discordUserId } });
   });
+}
+
+/**
+ * Validate a BGG username (its collection must be reachable) and store it on
+ * the player. Idempotent — re-linking a different username just updates it.
+ * `idOrDiscordId` lets the bot pass the invoking Discord user id.
+ */
+export async function linkBggUsername(
+  idOrDiscordId: string,
+  bggUsername: string,
+): Promise<PlayerRecord> {
+  const player = await findPlayerByIdOrDiscord(prisma, idOrDiscordId);
+  if (!player) throw notFound('player');
+
+  // Throws a friendly HttpError if the username/collection isn't usable.
+  await collectionExists(bggUsername);
+
+  const taken = await prisma.player.findUnique({ where: { bggUsername } });
+  if (taken && taken.id !== player.id) {
+    throw badRequest(`BGG account "${bggUsername}" is already linked to another player.`);
+  }
+
+  return prisma.player.update({ where: { id: player.id }, data: { bggUsername } });
 }

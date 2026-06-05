@@ -7,6 +7,8 @@
  */
 import { z } from 'zod';
 
+export * from './bggMatch.js';
+
 /** A trimmed, non-empty string. */
 const nonEmpty = (label: string) => z.string().trim().min(1, `${label} is required`);
 
@@ -28,6 +30,7 @@ export const playerDto = z.object({
   id: z.string(),
   displayName: z.string(),
   discordUserId: z.string().nullable(),
+  bggUsername: z.string().nullable(),
   createdAt: z.string(),
 });
 export type PlayerDto = z.infer<typeof playerDto>;
@@ -36,6 +39,10 @@ export const gameDto = z.object({
   id: z.string(),
   name: z.string(),
   bggId: z.number().int().nullable(),
+  bggName: z.string().nullable(),
+  bggThumbnail: z.string().nullable(),
+  description: z.string().nullable(),
+  yearPublished: z.number().int().nullable(),
   minPlayers: z.number().int().nullable(),
   maxPlayers: z.number().int().nullable(),
   createdAt: z.string(),
@@ -95,10 +102,20 @@ export type LinkPlayerInput = z.infer<typeof linkPlayerInput>;
 export const createGameInput = z.object({
   name: nonEmpty('name'),
   bggId: z.number().int().positive().optional(),
+  bggName: z.string().trim().min(1).optional(),
+  bggThumbnail: z.string().trim().url().optional(),
+  description: z.string().trim().optional(),
+  yearPublished: z.number().int().optional(),
   minPlayers: z.number().int().positive().optional(),
   maxPlayers: z.number().int().positive().optional(),
 });
 export type CreateGameInput = z.infer<typeof createGameInput>;
+
+/** Rename a game to the group's preferred name (`PATCH /games/:id`). */
+export const renameGameInput = z.object({
+  name: nonEmpty('name'),
+});
+export type RenameGameInput = z.infer<typeof renameGameInput>;
 
 export const createLocationInput = z.object({
   name: nonEmpty('name'),
@@ -150,6 +167,86 @@ export const sessionListQuery = z.object({
   offset: z.coerce.number().int().nonnegative().default(0),
 });
 export type SessionListQuery = z.infer<typeof sessionListQuery>;
+
+// ---------------------------------------------------------------------------
+// BoardGameGeek integration
+// ---------------------------------------------------------------------------
+
+/** One row from a BGG game search (`GET /games/bgg-search`). */
+export const bggSearchResult = z.object({
+  bggId: z.number().int(),
+  name: z.string(),
+  yearPublished: z.number().int().nullable(),
+});
+export type BggSearchResult = z.infer<typeof bggSearchResult>;
+export const bggSearchResults = z.array(bggSearchResult);
+
+/** Full BGG game details (`GET /games/bgg/:bggId`). */
+export const bggGameDetail = z.object({
+  bggId: z.number().int(),
+  name: z.string(),
+  minPlayers: z.number().int().nullable(),
+  maxPlayers: z.number().int().nullable(),
+  yearPublished: z.number().int().nullable(),
+  thumbnail: z.string().nullable(),
+  description: z.string().nullable(),
+});
+export type BggGameDetail = z.infer<typeof bggGameDetail>;
+
+/**
+ * Pull a BGG game into the catalogue (`POST /games/import-bgg`). With neither
+ * override set the backend reconciles automatically; the overrides let the bot
+ * resolve an ambiguous match after asking the user.
+ */
+export const importBggGameInput = z
+  .object({
+    bggId: z.number().int().positive(),
+    /** Force-link to this existing game (keeps its name). */
+    linkToId: z.string().trim().min(1).optional(),
+    /** Force-create a new game even if a fuzzy match exists. */
+    forceCreate: z.boolean().optional(),
+  })
+  .refine((v) => !(v.linkToId && v.forceCreate), {
+    message: 'linkToId and forceCreate are mutually exclusive',
+  });
+export type ImportBggGameInput = z.infer<typeof importBggGameInput>;
+
+/** What the backend did (or wants confirmed) for a single BGG game. */
+export const bggReconcileAction = z.enum(['created', 'linked', 'enriched', 'ambiguous']);
+export type BggReconcileAction = z.infer<typeof bggReconcileAction>;
+
+export const bggReconcileResult = z.object({
+  action: bggReconcileAction,
+  /** The resulting game; null only when `action` is `ambiguous` (nothing changed). */
+  game: gameDto.nullable(),
+  /** A like-named existing game the user should confirm before linking. */
+  candidate: z.object({ id: z.string(), name: z.string(), score: z.number() }).nullable(),
+});
+export type BggReconcileResult = z.infer<typeof bggReconcileResult>;
+
+/** Link a BGG username to a player (`POST /players/:id/bgg-link`). */
+export const bggLinkInput = z.object({
+  bggUsername: nonEmpty('bggUsername'),
+});
+export type BggLinkInput = z.infer<typeof bggLinkInput>;
+
+/** Summary of a collection import (`POST /players/:id/bgg-import`). */
+export const bggImportResult = z.object({
+  created: z.number().int(),
+  linked: z.number().int(),
+  enriched: z.number().int(),
+  skipped: z.number().int(),
+  /** Ambiguous matches left untouched for manual reconciliation. */
+  needsReview: z.array(
+    z.object({
+      bggId: z.number().int(),
+      bggName: z.string(),
+      candidateName: z.string(),
+      score: z.number(),
+    }),
+  ),
+});
+export type BggImportResult = z.infer<typeof bggImportResult>;
 
 // ---------------------------------------------------------------------------
 // Stats

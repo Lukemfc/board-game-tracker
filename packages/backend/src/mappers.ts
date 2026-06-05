@@ -5,6 +5,7 @@ export const toPlayerDto = (p: PlayerRecord): PlayerDto => ({
   id: p.id,
   displayName: p.displayName,
   discordUserId: p.discordUserId,
+  bggUsername: p.bggUsername,
   createdAt: p.createdAt.toISOString(),
 });
 
@@ -12,6 +13,10 @@ export const toGameDto = (g: GameRecord): GameDto => ({
   id: g.id,
   name: g.name,
   bggId: g.bggId,
+  bggName: g.bggName,
+  bggThumbnail: g.bggThumbnail,
+  description: g.description,
+  yearPublished: g.yearPublished,
   minPlayers: g.minPlayers,
   maxPlayers: g.maxPlayers,
   createdAt: g.createdAt.toISOString(),

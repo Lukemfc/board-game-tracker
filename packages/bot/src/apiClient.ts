@@ -1,9 +1,16 @@
 import {
+  type BggImportResult,
+  bggImportResult,
+  type BggReconcileResult,
+  bggReconcileResult,
+  type BggSearchResult,
+  bggSearchResults,
   type CreateGameInput,
   type CreateSessionInput,
   type GameDto,
   gameDto,
   gameList,
+  type ImportBggGameInput,
   leaderboard,
   type LeaderboardEntry,
   type LinkPlayerInput,
@@ -139,6 +146,40 @@ class ApiClient {
 
   addGame(input: CreateGameInput): Promise<GameDto> {
     return this.request(gameDto, '/games', { method: 'POST', body: input });
+  }
+
+  renameGame(idOrName: string, name: string): Promise<GameDto> {
+    return this.request(gameDto, `/games/${encodeURIComponent(idOrName)}`, {
+      method: 'PATCH',
+      body: { name },
+    });
+  }
+
+  bggSearch(query: string): Promise<BggSearchResult[]> {
+    return this.request(bggSearchResults, '/games/bgg-search', { query: { query } });
+  }
+
+  importBggGame(input: ImportBggGameInput): Promise<BggReconcileResult> {
+    return this.request(bggReconcileResult, '/games/import-bgg', { method: 'POST', body: input });
+  }
+
+  linkBgg(discordUserId: string, bggUsername: string): Promise<PlayerDto> {
+    return this.request(playerDto, `/players/${encodeURIComponent(discordUserId)}/bgg-link`, {
+      method: 'POST',
+      body: { bggUsername },
+      discordUserId,
+    });
+  }
+
+  importCollection(discordUserId: string): Promise<BggImportResult> {
+    return this.request(
+      bggImportResult,
+      `/players/${encodeURIComponent(discordUserId)}/bgg-import`,
+      {
+        method: 'POST',
+        discordUserId,
+      },
+    );
   }
 
   listLocations(): Promise<LocationDto[]> {

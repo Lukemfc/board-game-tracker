@@ -14,19 +14,24 @@ model Player {
   id              String          @id @default(cuid())
   displayName     String
   discordUserId   String?         @unique
+  bggUsername     String?         @unique // BGG username, for collection import
   createdAt       DateTime        @default(now())
   participations  SessionPlayer[]
   createdSessions Session[]       @relation("CreatedBy")
 }
 
 model Game {
-  id         String    @id @default(cuid())
-  name       String    @unique
-  bggId      Int? // BoardGameGeek id, for future enrichment
-  minPlayers Int?
-  maxPlayers Int?
-  createdAt  DateTime  @default(now())
-  sessions   Session[]
+  id            String    @id @default(cuid())
+  name          String    @unique // the group's simple name — never overwritten by BGG
+  bggId         Int?      @unique // BoardGameGeek id; the reliable link key
+  bggName       String? // BGG's canonical (often verbose) name, for reference/search
+  bggThumbnail  String? // URL to BGG thumbnail image
+  description   String? // BGG short description
+  yearPublished Int? // year the game was published
+  minPlayers    Int?
+  maxPlayers    Int?
+  createdAt     DateTime  @default(now())
+  sessions      Session[]
 }
 
 model Location {

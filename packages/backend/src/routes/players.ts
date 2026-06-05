@@ -1,10 +1,19 @@
-import { createPlayerInput, idParam, linkPlayerInput, playerDto, playerList } from '@meeple/shared';
+import {
+  bggImportResult,
+  bggLinkInput,
+  createPlayerInput,
+  idParam,
+  linkPlayerInput,
+  playerDto,
+  playerList,
+} from '@meeple/shared';
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { notFound } from '../errors.js';
+import { badRequest, notFound } from '../errors.js';
 import { toPlayerDto } from '../mappers.js';
 import { prisma } from '../prisma.js';
-import { linkPlayer } from '../services/players.js';
+import { importCollection } from '../services/bggReconcile.js';
+import { linkBggUsername, linkPlayer } from '../services/players.js';
 
 export default async function playerRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -38,4 +47,26 @@ export default async function playerRoutes(fastify: FastifyInstance): Promise<vo
     if (!player) throw notFound('player');
     return toPlayerDto(player);
   });
+
+  // `:id` may be a player id or a Discord user id (the bot passes the latter).
+  app.post(
+    '/:id/bgg-link',
+    { schema: { params: idParam, body: bggLinkInput, response: { 200: playerDto } } },
+    async (req) => toPlayerDto(await linkBggUsername(req.params.id, req.body.bggUsername)),
+  );
+
+  app.post(
+    '/:id/bgg-import',
+    { schema: { params: idParam, response: { 200: bggImportResult } } },
+    async (req) => {
+      const player = await prisma.player.findFirst({
+        where: { OR: [{ id: req.params.id }, { discordUserId: req.params.id }] },
+      });
+      if (!player) throw notFound('player');
+      if (!player.bggUsername) {
+        throw badRequest('Link a BGG account first with `/linkbgg` before importing.');
+      }
+      return importCollection(player.bggUsername);
+    },
+  );
 }

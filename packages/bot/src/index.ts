@@ -1,5 +1,12 @@
 import { Client, Collection, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 import {
+  ADDGAME_LINK_PREFIX,
+  ADDGAME_NEW_PREFIX,
+  ADDGAME_SELECT_ID,
+  handleAddgameButton,
+  handleAddgameSelect,
+} from './commands/addgame.js';
+import {
   DELETESESSION_CANCEL_PREFIX,
   DELETESESSION_CONFIRM_PREFIX,
   DELETESESSION_SELECT_ID,
@@ -60,6 +67,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await handleEditSessionSelect(interaction);
       } else if (interaction.customId === DELETESESSION_SELECT_ID) {
         await handleDeleteSessionSelect(interaction);
+      } else if (interaction.customId === ADDGAME_SELECT_ID) {
+        await handleAddgameSelect(interaction);
       }
     } catch (err) {
       console.error(`Select menu error (${interaction.customId}):`, err);
@@ -85,6 +94,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
         interaction.customId.startsWith(DELETESESSION_CANCEL_PREFIX)
       ) {
         await handleDeleteSessionButton(interaction);
+      } else if (
+        interaction.customId.startsWith(ADDGAME_LINK_PREFIX) ||
+        interaction.customId.startsWith(ADDGAME_NEW_PREFIX)
+      ) {
+        await handleAddgameButton(interaction);
       }
     } catch (err) {
       console.error(`Button error (${interaction.customId}):`, err);

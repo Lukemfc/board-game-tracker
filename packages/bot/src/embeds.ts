@@ -1,4 +1,10 @@
-import type { GameDto, LeaderboardEntry, PlayerStats, SessionDto } from '@meeple/shared';
+import type {
+  BggImportResult,
+  GameDto,
+  LeaderboardEntry,
+  PlayerStats,
+  SessionDto,
+} from '@meeple/shared';
 import { EmbedBuilder } from 'discord.js';
 
 const COLOR = 0x4caf50;
@@ -41,12 +47,73 @@ export function recentEmbed(sessions: SessionDto[]): EmbedBuilder {
   return embed;
 }
 
+/** A single game's details — used after adding/enriching via BGG. */
+export function gameEmbed(game: GameDto, title = `🎲 ${game.name}`): EmbedBuilder {
+  const embed = new EmbedBuilder().setColor(COLOR).setTitle(title);
+
+  if (game.bggThumbnail) embed.setThumbnail(game.bggThumbnail);
+  if (game.description) embed.setDescription(game.description);
+
+  const players =
+    game.minPlayers != null && game.maxPlayers != null
+      ? game.minPlayers === game.maxPlayers
+        ? `${game.minPlayers}`
+        : `${game.minPlayers}–${game.maxPlayers}`
+      : (game.minPlayers ?? game.maxPlayers)?.toString();
+  if (players) embed.addFields({ name: 'Players', value: players, inline: true });
+  if (game.yearPublished) {
+    embed.addFields({ name: 'Year', value: String(game.yearPublished), inline: true });
+  }
+  if (game.bggId) {
+    embed.addFields({
+      name: 'BGG',
+      value: `[View on BGG](https://boardgamegeek.com/boardgame/${game.bggId})`,
+      inline: true,
+    });
+  }
+  return embed;
+}
+
 export function gamesEmbed(games: GameDto[]): EmbedBuilder {
   const embed = new EmbedBuilder().setColor(COLOR).setTitle('🎲 Game catalogue');
   if (games.length === 0) {
     return embed.setDescription('No games yet. Add one with `/addgame`.');
   }
   return embed.setDescription(games.map((g) => `• ${g.name}`).join('\n'));
+}
+
+export function bggImportEmbed(result: BggImportResult): EmbedBuilder {
+  const total = result.created + result.linked + result.enriched;
+  const embed = new EmbedBuilder()
+    .setColor(COLOR)
+    .setTitle('📦 BGG collection imported')
+    .setDescription(
+      `Processed **${total}** game${total === 1 ? '' : 's'} — ` +
+        `${result.created} new, ${result.linked} linked to existing, ${result.enriched} enriched.`,
+    );
+
+  if (result.created > 0) {
+    embed.addFields({
+      name: '✏️ New games use their BGG name',
+      value:
+        `The ${result.created} new game${result.created === 1 ? '' : 's'} came in with BoardGameGeek's name. ` +
+        "Use `/renamegame` to switch any to your group's simpler name.",
+    });
+  }
+
+  if (result.needsReview.length > 0) {
+    const list = result.needsReview
+      .slice(0, 10)
+      .map((r) => `• ${r.bggName} — looks like **${r.candidateName}**`)
+      .join('\n');
+    const more =
+      result.needsReview.length > 10 ? `\n…and ${result.needsReview.length - 10} more.` : '';
+    embed.addFields({
+      name: `⚠️ ${result.needsReview.length} need review (left untouched)`,
+      value: `${list}${more}\nUse \`/addgame\` to link these manually — existing names were not changed.`,
+    });
+  }
+  return embed;
 }
 
 export function playersEmbed(
