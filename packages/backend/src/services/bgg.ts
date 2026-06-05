@@ -14,6 +14,14 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const COLLECTION_MAX_ATTEMPTS = 5;
 const COLLECTION_RETRY_MS = 2000;
 
+// BGG sits behind Cloudflare, which rejects requests with no User-Agent as
+// bots (HTTP 403). Node's fetch sends none by default, so set a descriptive
+// one — BGG's API etiquette asks for this anyway.
+const BGG_HEADERS = {
+  accept: 'text/xml',
+  'user-agent': 'MeepleLedger/0.1 (+https://github.com/meeple-ledger; board-game-night tracker)',
+};
+
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '',
@@ -93,7 +101,7 @@ function primaryName(nameField: unknown): string | undefined {
 async function getXml(url: string): Promise<Record<string, unknown>> {
   let res: Response;
   try {
-    res = await fetch(url, { headers: { accept: 'text/xml' } });
+    res = await fetch(url, { headers: BGG_HEADERS });
   } catch {
     throw unavailable();
   }
@@ -183,12 +191,11 @@ export async function collectionExists(username: string): Promise<boolean> {
  */
 export async function getCollection(username: string): Promise<BggSearchResult[]> {
   const url = `${BASE}/collection?username=${encodeURIComponent(username)}&own=1&subtype=boardgame`;
-
   let parsed: Record<string, unknown> | undefined;
   for (let attempt = 0; attempt < COLLECTION_MAX_ATTEMPTS; attempt++) {
     let res: Response;
     try {
-      res = await fetch(url, { headers: { accept: 'text/xml' } });
+      res = await fetch(url, { headers: BGG_HEADERS });
     } catch {
       throw unavailable();
     }
