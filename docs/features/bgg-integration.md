@@ -25,6 +25,8 @@ BGG provides a free, no-auth-required XML API.
 | Game details    | `https://boardgamegeek.com/xmlapi2/thing?id=<bggId>&stats=1`                               |
 | User collection | `https://boardgamegeek.com/xmlapi2/collection?username=<username>&own=1&subtype=boardgame` |
 
+**Authentication (required since Oct 2025):** the XML API now rejects unauthenticated requests with `401` (`www-authenticate: Bearer realm="xml api"`). You must register the application at [boardgamegeek.com/using_the_xml_api](https://boardgamegeek.com/using_the_xml_api) to obtain a token, then send `Authorization: Bearer <token>` on every request. The backend reads this from the `BGG_API_TOKEN` env var. A browser appears to work without it only because it carries a logged-in BGG session — server-side calls (local or hosted) get `401` until the token is set.
+
 **Important quirk:** The collection endpoint sometimes returns HTTP `202 Accepted` (request queued). The client must poll until it gets `200`. Implement a retry loop with a 2-second delay, up to ~5 attempts.
 
 Use a lightweight XML parser (e.g. `fast-xml-parser` or `xml2js`) in the backend. Do **not** call BGG from the bot directly — all external HTTP goes through the backend API.

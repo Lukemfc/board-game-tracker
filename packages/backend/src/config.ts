@@ -8,6 +8,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   HOST: z.string().default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  // BGG's XML API requires a Bearer token (registration mandatory since Oct 2025).
+  // Register at https://boardgamegeek.com/using_the_xml_api to obtain one.
+  BGG_API_TOKEN: z.string().min(1).optional(),
 });
 
 function loadConfig() {

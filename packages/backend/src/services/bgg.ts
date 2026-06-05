@@ -7,6 +7,7 @@
  */
 import { XMLParser } from 'fast-xml-parser';
 import type { BggGameDetail, BggSearchResult } from '@meeple/shared';
+import { config } from '../config.js';
 import { HttpError } from '../errors.js';
 
 const BASE = 'https://boardgamegeek.com/xmlapi2';
@@ -14,12 +15,13 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const COLLECTION_MAX_ATTEMPTS = 5;
 const COLLECTION_RETRY_MS = 2000;
 
-// BGG sits behind Cloudflare, which rejects requests with no User-Agent as
-// bots (HTTP 403). Node's fetch sends none by default, so set a descriptive
-// one — BGG's API etiquette asks for this anyway.
-const BGG_HEADERS = {
+// BGG's XML API requires a registered application's Bearer token (mandatory
+// since Oct 2025); without it the API answers 401. The descriptive User-Agent
+// is also requested by BGG's API etiquette. `BGG_API_TOKEN` is set in env.
+const BGG_HEADERS: Record<string, string> = {
   accept: 'text/xml',
   'user-agent': 'MeepleLedger/0.1 (+https://github.com/meeple-ledger; board-game-night tracker)',
+  ...(config.BGG_API_TOKEN ? { authorization: `Bearer ${config.BGG_API_TOKEN}` } : {}),
 };
 
 const parser = new XMLParser({
@@ -98,6 +100,17 @@ function primaryName(nameField: unknown): string | undefined {
 
 // Fetching ------------------------------------------------------------------
 
+/** Log the real upstream status + a snippet so we can diagnose blocks. */
+async function logBggFailure(url: string, res: Response): Promise<string> {
+  const body = await res.text().catch(() => '');
+  console.warn(
+    `[bgg] ${url} -> ${res.status} ${res.statusText} ` +
+      `server=${res.headers.get('server') ?? '?'} cf-ray=${res.headers.get('cf-ray') ?? '-'} ` +
+      `www-authenticate=${res.headers.get('www-authenticate') ?? '-'} body=${JSON.stringify(body.slice(0, 200))}`,
+  );
+  return body;
+}
+
 async function getXml(url: string): Promise<Record<string, unknown>> {
   let res: Response;
   try {
@@ -105,14 +118,24 @@ async function getXml(url: string): Promise<Record<string, unknown>> {
   } catch {
     throw unavailable();
   }
-  if (res.status === 403) {
-    throw new HttpError(
-      403,
-      'bgg_private',
-      'That BGG collection is private. Make it public at boardgamegeek.com → Profile → Account Settings, then try again.',
-    );
+  if (!res.ok) {
+    await logBggFailure(url, res);
+    if (res.status === 403) {
+      throw new HttpError(
+        403,
+        'bgg_private',
+        'That BGG collection is private. Make it public at boardgamegeek.com → Profile → Account Settings, then try again.',
+      );
+    }
+    if (res.status === 401) {
+      throw new HttpError(
+        502,
+        'bgg_blocked',
+        'BoardGameGeek rejected the request (401). The BGG_API_TOKEN is missing or invalid — register the app at boardgamegeek.com/using_the_xml_api and set the token.',
+      );
+    }
+    throw unavailable();
   }
-  if (!res.ok) throw unavailable();
   const body = await res.text();
   return parser.parse(body) as Record<string, unknown>;
 }
@@ -203,14 +226,24 @@ export async function getCollection(username: string): Promise<BggSearchResult[]
       await sleep(COLLECTION_RETRY_MS);
       continue;
     }
-    if (res.status === 401 || res.status === 403) {
-      throw new HttpError(
-        403,
-        'bgg_private',
-        'Your BGG collection is private. Make it public at boardgamegeek.com → Profile → Account Settings, then try again.',
-      );
+    if (!res.ok) {
+      await logBggFailure(url, res);
+      if (res.status === 403) {
+        throw new HttpError(
+          403,
+          'bgg_private',
+          'Your BGG collection is private. Make it public at boardgamegeek.com → Profile → Account Settings, then try again.',
+        );
+      }
+      if (res.status === 401) {
+        throw new HttpError(
+          502,
+          'bgg_blocked',
+          'BoardGameGeek refused the request (401). The server may be blocked or rate-limited by BGG — try again shortly.',
+        );
+      }
+      throw unavailable();
     }
-    if (!res.ok) throw unavailable();
     parsed = parser.parse(await res.text()) as Record<string, unknown>;
     break;
   }
