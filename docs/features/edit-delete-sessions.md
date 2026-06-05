@@ -1,6 +1,6 @@
 # Feature: Edit & Delete Sessions from Discord
 
-**Status:** Planned  
+**Status:** Done  
 **Priority:** High  
 **Tracker:** [FEATURE-TRACKER.md](../FEATURE-TRACKER.md)
 
