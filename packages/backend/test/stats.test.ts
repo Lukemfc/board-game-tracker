@@ -86,6 +86,10 @@ describe('stats', () => {
     expect(stats.wins).toBe(2);
     expect(stats.byGame.find((g) => g.game.name === 'Catan')?.plays).toBe(2);
     expect(stats.recent.length).toBeGreaterThan(0);
+
+    // byGame is ordered by wins desc, then win rate. Alice won Catan (1/2) and
+    // Wingspan (1/1) once each, so equal wins put the higher win rate first.
+    expect(stats.byGame.map((g) => g.game.name)).toEqual(['Wingspan', 'Catan']);
   });
 
   it('per-game stats report plays and top winner', async () => {

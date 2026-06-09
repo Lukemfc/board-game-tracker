@@ -68,7 +68,13 @@ export async function getPlayerStats(idOrDiscordId: string): Promise<PlayerStats
   }
   const byGame = [...byGameMap.values()]
     .map((e) => ({ game: toGameDto(e.game), plays: e.plays, wins: e.wins }))
-    .sort((a, b) => b.plays - a.plays || a.game.name.localeCompare(b.game.name));
+    .sort(
+      (a, b) =>
+        b.wins - a.wins || // most wins first
+        winRate(b.wins, b.plays) - winRate(a.wins, a.plays) || // then better win rate
+        b.plays - a.plays || // then more plays
+        a.game.name.localeCompare(b.game.name), // then alphabetical
+    );
 
   const recent = participations
     .map((p) => p.session)
