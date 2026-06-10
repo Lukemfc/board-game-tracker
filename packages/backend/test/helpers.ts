@@ -12,7 +12,7 @@ export function authHeaders(discordUserId?: string): Record<string, string> {
 
 export async function resetDb(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "SessionPlayer", "Session", "Player", "Game", "Location" RESTART IDENTITY CASCADE;',
+    'TRUNCATE TABLE "Rating", "SessionPlayer", "Session", "Player", "Game", "Location" RESTART IDENTITY CASCADE;',
   );
 }
 

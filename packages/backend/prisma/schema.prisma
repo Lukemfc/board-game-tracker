@@ -18,6 +18,7 @@ model Player {
   createdAt       DateTime        @default(now())
   participations  SessionPlayer[]
   createdSessions Session[]       @relation("CreatedBy")
+  ratings         Rating[]
 }
 
 model Game {
@@ -32,6 +33,7 @@ model Game {
   maxPlayers    Int?
   createdAt     DateTime  @default(now())
   sessions      Session[]
+  ratings       Rating[]
 }
 
 model Location {
@@ -67,4 +69,21 @@ model SessionPlayer {
 
   @@id([sessionId, playerId])
   @@index([playerId])
+}
+
+// A player's personal enjoyment rating (1–5) for a game — stated preference,
+// independent of how often it's played or who wins. One row per (player, game),
+// upserted. `value` is constrained to 1–5 at the API layer (Zod), matching the
+// rest of the schema's validation style. Feeds the `/suggest` engine.
+model Rating {
+  player    Player   @relation(fields: [playerId], references: [id])
+  playerId  String
+  game      Game     @relation(fields: [gameId], references: [id])
+  gameId    String
+  value     Int // 1–5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([playerId, gameId])
+  @@index([gameId])
 }

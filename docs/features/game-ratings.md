@@ -1,6 +1,6 @@
 # Feature: Game Enjoyment Ratings
 
-**Status:** Planned  
+**Status:** In progress — `/rate` + `/gameratings` and the ratings API shipped; the `/suggest` blend lands with [what-to-play-tonight.md](what-to-play-tonight.md) (not yet built).  
 **Priority:** Medium  
 **Tracker:** [FEATURE-TRACKER.md](../FEATURE-TRACKER.md)  
 **Amends:** [what-to-play-tonight.md](what-to-play-tonight.md) — blends a rating signal into the affinity-based favourite multiplier.
@@ -161,6 +161,8 @@ GET  /games/:id/ratings        → { average, count, perPlayer: [{ player, value
 - `GET` returns `average: null` and `perPlayer: []` when unrated.
 
 ### `/suggest` integration
+
+> **Deferred:** `/suggest` (the [what-to-play-tonight](what-to-play-tonight.md) feature) is not built yet, so the blend below isn't wired up. The ratings data model, API, and Discord commands ship now; when `/suggest` lands it folds in the rating signal as described, starting with `RATING_WEIGHT = 0` (affinity-only) per the phasing note.
 
 In the suggest service, keep the existing `affinity` / `affinityNorm` computation and fold the rating signal into it to form the `preferenceMultiplier` above:
 

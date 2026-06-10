@@ -295,6 +295,50 @@ export const gameStats = z.object({
 export type GameStats = z.infer<typeof gameStats>;
 
 // ---------------------------------------------------------------------------
+// Ratings
+// ---------------------------------------------------------------------------
+
+/** One player's enjoyment rating (1–5) for a game. */
+export const rating = z.object({ player: playerDto, value: z.number().int().min(1).max(5) });
+export type Rating = z.infer<typeof rating>;
+
+/** Aggregate ratings for a single game (`GET /games/:id/ratings`). */
+export const gameRatings = z.object({
+  /** Mean of all ratings, or null when nobody has rated the game. */
+  average: z.number().nullable(),
+  count: z.number().int(),
+  /** Per-player breakdown, sorted high→low by the route. */
+  perPlayer: z.array(rating),
+});
+export type GameRatings = z.infer<typeof gameRatings>;
+
+/**
+ * Upsert a rating (`PUT /games/:id/ratings`). The caller is identified by
+ * `discordUserId` (created if needed, like `/logplay`) or an existing
+ * `playerId`; at least one is required.
+ */
+export const upsertRatingInput = z
+  .object({
+    playerId: z.string().trim().min(1).optional(),
+    discordUserId: z.string().trim().min(1).optional(),
+    /** Display name to use if the player is created. */
+    name: z.string().trim().min(1).optional(),
+    value: z.number().int().min(1).max(5),
+  })
+  .refine((r) => Boolean(r.playerId) || Boolean(r.discordUserId), {
+    message: 'playerId or discordUserId is required',
+  });
+export type UpsertRatingInput = z.infer<typeof upsertRatingInput>;
+
+/** Result of an upsert: the saved rating plus the game's new group average. */
+export const upsertRatingResult = z.object({
+  rating,
+  average: z.number(),
+  count: z.number().int(),
+});
+export type UpsertRatingResult = z.infer<typeof upsertRatingResult>;
+
+// ---------------------------------------------------------------------------
 // Misc
 // ---------------------------------------------------------------------------
 

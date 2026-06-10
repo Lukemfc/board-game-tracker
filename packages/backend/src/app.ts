@@ -13,6 +13,7 @@ import gameRoutes from './routes/games.js';
 import healthRoutes from './routes/health.js';
 import locationRoutes from './routes/locations.js';
 import playerRoutes from './routes/players.js';
+import ratingRoutes from './routes/ratings.js';
 import sessionRoutes from './routes/sessions.js';
 import statsRoutes from './routes/stats.js';
 
@@ -70,6 +71,7 @@ export function buildApp(): FastifyInstance {
   app.register(healthRoutes);
   app.register(playerRoutes, { prefix: '/players' });
   app.register(gameRoutes, { prefix: '/games' });
+  app.register(ratingRoutes, { prefix: '/games' });
   app.register(locationRoutes, { prefix: '/locations' });
   app.register(sessionRoutes, { prefix: '/sessions' });
   app.register(statsRoutes, { prefix: '/stats' });

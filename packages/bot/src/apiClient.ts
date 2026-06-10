@@ -9,6 +9,8 @@ import {
   type CreateSessionInput,
   type GameDto,
   gameDto,
+  type GameRatings,
+  gameRatings,
   gameList,
   type ImportBggGameInput,
   leaderboard,
@@ -25,6 +27,8 @@ import {
   sessionDto,
   sessionList,
   type UpdateSessionInput,
+  type UpsertRatingResult,
+  upsertRatingResult,
 } from '@meeple/shared';
 import type { z } from 'zod';
 import { config } from './config.js';
@@ -204,6 +208,23 @@ class ApiClient {
 
   getPlayerStats(idOrDiscordId: string): Promise<PlayerStats> {
     return this.request(playerStats, `/stats/players/${encodeURIComponent(idOrDiscordId)}`);
+  }
+
+  rateGame(
+    gameIdOrName: string,
+    discordUserId: string,
+    name: string | undefined,
+    value: number,
+  ): Promise<UpsertRatingResult> {
+    return this.request(upsertRatingResult, `/games/${encodeURIComponent(gameIdOrName)}/ratings`, {
+      method: 'PUT',
+      body: { discordUserId, name, value },
+      discordUserId,
+    });
+  }
+
+  getGameRatings(gameIdOrName: string): Promise<GameRatings> {
+    return this.request(gameRatings, `/games/${encodeURIComponent(gameIdOrName)}/ratings`);
   }
 }
 

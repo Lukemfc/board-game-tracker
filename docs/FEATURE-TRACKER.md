@@ -12,7 +12,7 @@ A living index of feature ideas. Each entry links to a detailed spec in `docs/fe
 | BGG Integration                     | High     | [bgg-integration.md](features/bgg-integration.md)           | Search BGG when adding games; link BGG username to import collection |
 | Edit / Delete Sessions from Discord | High     | [edit-delete-sessions.md](features/edit-delete-sessions.md) | Backend routes already exist; bot commands needed                    |
 | What Should We Play Tonight?        | Medium   | [what-to-play-tonight.md](features/what-to-play-tonight.md) | `/suggest` command — recency, player count, variety scoring          |
-| Game Enjoyment Ratings              | Medium   | [game-ratings.md](features/game-ratings.md)                 | Per-player 1–5 enjoyment ratings; feeds `/suggest` toward liked games |
+| Game Enjoyment Ratings              | Medium   | [game-ratings.md](features/game-ratings.md)                 | `/rate` + `/gameratings` + ratings API shipped; `/suggest` blend waits on What-To-Play |
 
 ---
 

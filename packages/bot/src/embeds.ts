@@ -1,6 +1,7 @@
 import type {
   BggImportResult,
   GameDto,
+  GameRatings,
   LeaderboardEntry,
   PlayerStats,
   SessionDto,
@@ -10,6 +11,9 @@ import { EmbedBuilder } from 'discord.js';
 const COLOR = 0x4caf50;
 
 const day = (iso: string) => iso.slice(0, 10);
+
+/** Render a 1–5 value as filled/empty stars, e.g. 4 → "★★★★☆". */
+export const stars = (value: number) => '★'.repeat(value) + '☆'.repeat(5 - value);
 
 function playerLine(p: SessionDto['players'][number]): string {
   const crown = p.isWinner ? '👑 ' : '• ';
@@ -145,6 +149,41 @@ export function leaderboardEmbed(entries: LeaderboardEntry[]): EmbedBuilder {
       })
       .join('\n'),
   );
+  return embed;
+}
+
+/**
+ * A game's enjoyment ratings: group average plus a per-player breakdown.
+ * `notRated` lists roster members who haven't rated it yet.
+ */
+export function gameRatingsEmbed(
+  gameName: string,
+  ratings: GameRatings,
+  notRated: string[],
+): EmbedBuilder {
+  const embed = new EmbedBuilder().setColor(COLOR);
+
+  if (ratings.count === 0) {
+    return embed
+      .setTitle(`⭐ ${gameName}`)
+      .setDescription(`No ratings yet for **${gameName}**. Be the first with \`/rate\`.`);
+  }
+
+  const avg = (ratings.average ?? 0).toFixed(1);
+  embed.setTitle(`⭐ ${gameName} — ${avg}★ avg`);
+
+  const pad = Math.max(...ratings.perPlayer.map((r) => r.player.displayName.length));
+  const lines = ratings.perPlayer.map(
+    (r) => `\`${r.player.displayName.padEnd(pad)}\`  ${stars(r.value)}  (${r.value})`,
+  );
+  embed.setDescription(lines.join('\n'));
+
+  embed.setFooter({
+    text: `${ratings.count} rating${ratings.count === 1 ? '' : 's'}`,
+  });
+  if (notRated.length > 0) {
+    embed.addFields({ name: 'Not yet rated', value: notRated.join(', ') });
+  }
   return embed;
 }
 
