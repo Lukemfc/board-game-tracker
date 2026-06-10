@@ -226,6 +226,12 @@ class ApiClient {
   getGameRatings(gameIdOrName: string): Promise<GameRatings> {
     return this.request(gameRatings, `/games/${encodeURIComponent(gameIdOrName)}/ratings`);
   }
+
+  getUnratedGames(idOrDiscordId: string, scope: 'played' | 'all' = 'played'): Promise<GameDto[]> {
+    return this.request(gameList, `/players/${encodeURIComponent(idOrDiscordId)}/unrated-games`, {
+      query: { scope },
+    });
+  }
 }
 
 export const api = new ApiClient(config.API_BASE_URL, config.SERVICE_API_KEY);

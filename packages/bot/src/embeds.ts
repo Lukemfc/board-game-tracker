@@ -187,6 +187,23 @@ export function gameRatingsEmbed(
   return embed;
 }
 
+/** One step of the `/ratemany` walkthrough: the game to rate plus progress. */
+export function rateManyEmbed(
+  game: GameDto,
+  index: number,
+  total: number,
+  rated: number,
+  skipped: number,
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setColor(COLOR)
+    .setTitle('⭐ Quick rate')
+    .setDescription(`How much do you enjoy **${game.name}**?\nTap a star, or skip it.`)
+    .setFooter({ text: `Game ${index + 1} of ${total} · ${rated} rated · ${skipped} skipped` });
+  if (game.bggThumbnail) embed.setThumbnail(game.bggThumbnail);
+  return embed;
+}
+
 export function playerStatsEmbed(stats: PlayerStats): EmbedBuilder {
   const pct = Math.round(stats.winRate * 100);
   const embed = new EmbedBuilder()

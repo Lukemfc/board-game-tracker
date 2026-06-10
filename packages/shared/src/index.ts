@@ -338,6 +338,16 @@ export const upsertRatingResult = z.object({
 });
 export type UpsertRatingResult = z.infer<typeof upsertRatingResult>;
 
+/**
+ * Which games a player still has to rate (`GET /players/:id/unrated-games`).
+ * `played` (default) = games they've logged a session for; `all` = the whole
+ * catalogue. Either way, games they've already rated are excluded.
+ */
+export const unratedGamesQuery = z.object({
+  scope: z.enum(['played', 'all']).default('played'),
+});
+export type UnratedGamesQuery = z.infer<typeof unratedGamesQuery>;
+
 // ---------------------------------------------------------------------------
 // Misc
 // ---------------------------------------------------------------------------

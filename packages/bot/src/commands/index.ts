@@ -11,6 +11,7 @@ import linkme from './linkme.js';
 import logplay from './logplay.js';
 import players from './players.js';
 import rate from './rate.js';
+import ratemany from './ratemany.js';
 import recent from './recent.js';
 import renamegame from './renamegame.js';
 import stats from './stats.js';
@@ -30,5 +31,6 @@ export const commands: BotCommand[] = [
   stats,
   leaderboard,
   rate,
+  ratemany,
   gameratings,
 ];

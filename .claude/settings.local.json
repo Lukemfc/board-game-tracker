@@ -6,7 +6,10 @@
       "Read(//Users/lukeharland/.nvm/versions/node/**)",
       "Bash(npm -v)",
       "Read(//opt/homebrew/**)",
-      "Bash(pnpm *)"
+      "Bash(pnpm *)",
+      "Bash(command *)",
+      "Bash(chmod +x /Users/lukeharland/.claude/statusline.sh)",
+      "Bash(/Users/lukeharland/.claude/statusline.sh)"
     ]
   }
 }

@@ -2,18 +2,21 @@ import {
   bggImportResult,
   bggLinkInput,
   createPlayerInput,
+  gameList,
   idParam,
   linkPlayerInput,
   playerDto,
   playerList,
+  unratedGamesQuery,
 } from '@meeple/shared';
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { badRequest, notFound } from '../errors.js';
-import { toPlayerDto } from '../mappers.js';
+import { toGameDto, toPlayerDto } from '../mappers.js';
 import { prisma } from '../prisma.js';
 import { importCollection } from '../services/bggReconcile.js';
 import { linkBggUsername, linkPlayer } from '../services/players.js';
+import { getUnratedGamesForPlayer } from '../services/ratings.js';
 
 export default async function playerRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -47,6 +50,17 @@ export default async function playerRoutes(fastify: FastifyInstance): Promise<vo
     if (!player) throw notFound('player');
     return toPlayerDto(player);
   });
+
+  // Games this player still has to rate — drives the `/ratemany` walkthrough.
+  // `:id` may be a player id or a Discord user id.
+  app.get(
+    '/:id/unrated-games',
+    { schema: { params: idParam, querystring: unratedGamesQuery, response: { 200: gameList } } },
+    async (req) => {
+      const games = await getUnratedGamesForPlayer(req.params.id, req.query.scope);
+      return games.map(toGameDto);
+    },
+  );
 
   // `:id` may be a player id or a Discord user id (the bot passes the latter).
   app.post(

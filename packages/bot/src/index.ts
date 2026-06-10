@@ -19,6 +19,7 @@ import {
   handleEditSessionModal,
   handleEditSessionSelect,
 } from './commands/editsession.js';
+import { handleRateManyButton, RATEMANY_PREFIX } from './commands/ratemany.js';
 import { commands } from './commands/index.js';
 import type { BotCommand } from './commandTypes.js';
 import { config } from './config.js';
@@ -99,6 +100,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
         interaction.customId.startsWith(ADDGAME_NEW_PREFIX)
       ) {
         await handleAddgameButton(interaction);
+      } else if (interaction.customId.startsWith(RATEMANY_PREFIX)) {
+        await handleRateManyButton(interaction);
       }
     } catch (err) {
       console.error(`Button error (${interaction.customId}):`, err);

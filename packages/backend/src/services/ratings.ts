@@ -1,8 +1,14 @@
-import type { GameRatings, UpsertRatingInput, UpsertRatingResult } from '@meeple/shared';
+import type {
+  GameRatings,
+  UnratedGamesQuery,
+  UpsertRatingInput,
+  UpsertRatingResult,
+} from '@meeple/shared';
+import type { GameRecord } from '../db.js';
 import { notFound } from '../errors.js';
 import { toPlayerDto } from '../mappers.js';
 import { prisma, type Tx } from '../prisma.js';
-import { findGameByIdOrName } from './resolve.js';
+import { findGameByIdOrName, findPlayerByIdOrDiscord } from './resolve.js';
 
 /** Resolve (creating from a Discord id if needed) the player doing the rating. */
 async function resolveRater(tx: Tx, input: UpsertRatingInput) {
@@ -80,4 +86,49 @@ export async function getGameRatings(idOrName: string): Promise<GameRatings> {
   const average = count > 0 ? ratings.reduce((sum, r) => sum + r.value, 0) / count : null;
 
   return { average, count, perPlayer };
+}
+
+/**
+ * Games a player still has to rate, for the bulk `/ratemany` walkthrough.
+ * `played` (default) returns games they've logged a session for, ordered by how
+ * often they've played them (most-played first); `all` returns the whole
+ * catalogue alphabetically. Games the player has already rated are excluded.
+ */
+export async function getUnratedGamesForPlayer(
+  idOrDiscord: string,
+  scope: UnratedGamesQuery['scope'],
+): Promise<GameRecord[]> {
+  const player = await findPlayerByIdOrDiscord(prisma, idOrDiscord);
+  if (!player) throw notFound('player');
+
+  const rated = await prisma.rating.findMany({
+    where: { playerId: player.id },
+    select: { gameId: true },
+  });
+  const ratedIds = new Set(rated.map((r) => r.gameId));
+
+  if (scope === 'all') {
+    const games = await prisma.game.findMany({ orderBy: { name: 'asc' } });
+    return games.filter((g) => !ratedIds.has(g.id));
+  }
+
+  // `played`: count this player's participations per game, newest interest first.
+  const participations = await prisma.sessionPlayer.findMany({
+    where: { playerId: player.id },
+    select: { session: { select: { gameId: true } } },
+  });
+  const playCount = new Map<string, number>();
+  for (const p of participations) {
+    const gameId = p.session.gameId;
+    playCount.set(gameId, (playCount.get(gameId) ?? 0) + 1);
+  }
+
+  const candidateIds = [...playCount.keys()].filter((id) => !ratedIds.has(id));
+  if (candidateIds.length === 0) return [];
+
+  const games = await prisma.game.findMany({ where: { id: { in: candidateIds } } });
+  return games.sort(
+    (a, b) =>
+      (playCount.get(b.id) ?? 0) - (playCount.get(a.id) ?? 0) || a.name.localeCompare(b.name),
+  );
 }
