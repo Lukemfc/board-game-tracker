@@ -127,6 +127,36 @@ describe('GET /games/:id/ratings', () => {
     });
     expect(res.statusCode).toBe(404);
   });
+
+  it('resolves a free-typed name that differs only in punctuation', async () => {
+    await addGame('Dune: Imperium – Uprising');
+    await rate('Dune: Imperium – Uprising', 'd-alice', 'Alice', 5);
+
+    const app = await getApp();
+    const res = await app.inject({
+      method: 'GET',
+      url: `/games/${encodeURIComponent('Dune Imperium Uprising')}/ratings`,
+      headers: authHeaders(),
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect((res.json() as GameRatings).average).toBe(5);
+  });
+
+  it('does not fuzzy-resolve when two games normalize identically', async () => {
+    await addGame('Catan!');
+    await addGame('CATAN?');
+
+    const app = await getApp();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/games/Catan/ratings',
+      headers: authHeaders(),
+    });
+
+    // Ambiguous — refuse to guess.
+    expect(res.statusCode).toBe(404);
+  });
 });
 
 describe('GET /players/:id/unrated-games', () => {

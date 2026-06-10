@@ -1,3 +1,4 @@
+import { normalizeGameName } from '@meeple/shared';
 import type { AutocompleteInteraction } from 'discord.js';
 import { api, ApiError } from './apiClient.js';
 
@@ -26,6 +27,9 @@ export async function gameLocationAutocomplete(
 ): Promise<void> {
   const focused = interaction.options.getFocused(true);
   const value = focused.value.toLowerCase();
+  // Normalized comparison so punctuation never hides a game: typing
+  // "dune imperium" must still match "Dune: Imperium – Uprising".
+  const wanted = normalizeGameName(focused.value);
   let choices: string[] = [];
   try {
     choices =
@@ -35,6 +39,16 @@ export async function gameLocationAutocomplete(
   } catch {
     choices = [];
   }
-  const filtered = choices.filter((c) => c.toLowerCase().includes(value)).slice(0, 25);
-  await interaction.respond(filtered.map((c) => ({ name: c, value: c })));
+  const filtered = choices
+    .filter((c) => c.toLowerCase().includes(value) || normalizeGameName(c).includes(wanted))
+    .sort((a, b) => {
+      // Prefix matches first, then alphabetical.
+      const ap = normalizeGameName(a).startsWith(wanted) ? 0 : 1;
+      const bp = normalizeGameName(b).startsWith(wanted) ? 0 : 1;
+      return ap - bp || a.localeCompare(b);
+    })
+    .slice(0, 25);
+  // Discord hard-rejects the entire response if any choice exceeds 100 chars,
+  // so clamp defensively — one long name must not blank out every suggestion.
+  await interaction.respond(filtered.map((c) => ({ name: c.slice(0, 100), value: c.slice(0, 100) })));
 }
