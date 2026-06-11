@@ -3,7 +3,7 @@
 **Status:** In progress — `/rate` + `/gameratings` and the ratings API shipped; the `/suggest` blend lands with [what-to-play-tonight.md](what-to-play-tonight.md) (not yet built).  
 **Priority:** Medium  
 **Tracker:** [FEATURE-TRACKER.md](../FEATURE-TRACKER.md)  
-**Amends:** [what-to-play-tonight.md](what-to-play-tonight.md) — blends a rating signal into the affinity-based favourite multiplier.
+**Amends:** [what-to-play-tonight.md](what-to-play-tonight.md) — blends a rating signal into the affinity-based favourite multiplier. (That spec now describes the blended `preferenceMultiplier` natively.)
 
 ---
 
