@@ -9,7 +9,8 @@
       "Bash(pnpm *)",
       "Bash(command *)",
       "Bash(chmod +x /Users/lukeharland/.claude/statusline.sh)",
-      "Bash(/Users/lukeharland/.claude/statusline.sh)"
+      "Bash(/Users/lukeharland/.claude/statusline.sh)",
+      "Bash(docker exec meeple-postgres *)"
     ]
   }
 }

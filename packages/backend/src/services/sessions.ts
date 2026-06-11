@@ -22,17 +22,20 @@ async function resolvePlayer(tx: Tx, input: SessionPlayerInput) {
   if (input.discordUserId) {
     return tx.player.upsert({
       where: { discordUserId: input.discordUserId },
-      update: {},
+      // Keep the Discord nickname fresh; realName (set via /linkme) is never touched.
+      update: input.name ? { discordName: input.name } : {},
       create: {
         discordUserId: input.discordUserId,
-        displayName: input.name ?? input.discordUserId,
+        discordName: input.name ?? null,
       },
     });
   }
   // name is guaranteed present by the shared schema's refine when discordUserId is absent.
   const name = input.name as string;
-  const existing = await tx.player.findFirst({ where: { displayName: name } });
-  return existing ?? tx.player.create({ data: { displayName: name } });
+  const existing =
+    (await tx.player.findFirst({ where: { realName: name } })) ??
+    (await tx.player.findFirst({ where: { discordName: name } }));
+  return existing ?? tx.player.create({ data: { realName: name } });
 }
 
 /** Resolve (creating a placeholder if needed) the acting user from the request header. */
@@ -41,7 +44,7 @@ async function resolveActor(tx: Tx, actingDiscordUserId?: string) {
   return tx.player.upsert({
     where: { discordUserId: actingDiscordUserId },
     update: {},
-    create: { discordUserId: actingDiscordUserId, displayName: actingDiscordUserId },
+    create: { discordUserId: actingDiscordUserId },
   });
 }
 

@@ -23,6 +23,7 @@ import {
   playerList,
   type PlayerStats,
   playerStats,
+  type ResolvePlayerInput,
   type SessionDto,
   sessionDto,
   sessionList,
@@ -198,6 +199,15 @@ class ApiClient {
 
   linkPlayer(input: LinkPlayerInput, discordUserId: string): Promise<PlayerDto> {
     return this.request(playerDto, '/players/link', {
+      method: 'POST',
+      body: input,
+      discordUserId,
+    });
+  }
+
+  /** Upsert a player by Discord id, syncing their nickname — never touches realName. */
+  resolvePlayer(input: ResolvePlayerInput, discordUserId: string): Promise<PlayerDto> {
+    return this.request(playerDto, '/players/resolve', {
       method: 'POST',
       body: input,
       discordUserId,

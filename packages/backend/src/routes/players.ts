@@ -7,6 +7,7 @@ import {
   linkPlayerInput,
   playerDto,
   playerList,
+  resolvePlayerInput,
   unratedGamesQuery,
 } from '@meeple/shared';
 import type { FastifyInstance } from 'fastify';
@@ -15,15 +16,15 @@ import { badRequest, notFound } from '../errors.js';
 import { toGameDto, toPlayerDto } from '../mappers.js';
 import { prisma } from '../prisma.js';
 import { importCollection } from '../services/bggReconcile.js';
-import { linkBggUsername, linkPlayer } from '../services/players.js';
+import { linkBggUsername, linkPlayer, resolvePlayer } from '../services/players.js';
 import { getUnratedGamesForPlayer } from '../services/ratings.js';
 
 export default async function playerRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
   app.get('/', { schema: { response: { 200: playerList } } }, async () => {
-    const players = await prisma.player.findMany({ orderBy: { displayName: 'asc' } });
-    return players.map(toPlayerDto);
+    const players = await prisma.player.findMany();
+    return players.map(toPlayerDto).sort((a, b) => a.displayName.localeCompare(b.displayName));
   });
 
   app.post(
@@ -31,7 +32,7 @@ export default async function playerRoutes(fastify: FastifyInstance): Promise<vo
     { schema: { body: createPlayerInput, response: { 201: playerDto } } },
     async (req, reply) => {
       const player = await prisma.player.create({
-        data: { displayName: req.body.displayName, discordUserId: req.body.discordUserId ?? null },
+        data: { realName: req.body.realName, discordUserId: req.body.discordUserId ?? null },
       });
       return reply.status(201).send(toPlayerDto(player));
     },
@@ -43,6 +44,13 @@ export default async function playerRoutes(fastify: FastifyInstance): Promise<vo
     async (req) => {
       return toPlayerDto(await linkPlayer(req.body));
     },
+  );
+
+  // Upsert by Discord id, syncing the nickname — never touches realName.
+  app.post(
+    '/resolve',
+    { schema: { body: resolvePlayerInput, response: { 200: playerDto } } },
+    async (req) => toPlayerDto(await resolvePlayer(req.body)),
   );
 
   app.get('/:id', { schema: { params: idParam, response: { 200: playerDto } } }, async (req) => {

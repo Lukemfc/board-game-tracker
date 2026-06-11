@@ -10,6 +10,7 @@
  */
 import { existsSync } from 'node:fs';
 import XLSX from 'xlsx';
+import { playerDisplayName } from '../mappers.js';
 import { prisma } from '../prisma.js';
 
 // --- Configure to match your spreadsheet -----------------------------------
@@ -100,7 +101,7 @@ async function main() {
     (await prisma.location.findMany()).map((l) => [keyName(l.name), l.id]),
   );
   const existingPlayers = new Map(
-    (await prisma.player.findMany()).map((p) => [keyName(p.displayName), p.id]),
+    (await prisma.player.findMany()).map((p) => [keyName(playerDisplayName(p)), p.id]),
   );
 
   const existingSessions = await prisma.session.findMany({
@@ -112,7 +113,7 @@ async function main() {
         keyName(s.game.name),
         dayKey(s.playedOn),
         s.players
-          .map((sp) => keyName(sp.player.displayName))
+          .map((sp) => keyName(playerDisplayName(sp.player)))
           .sort()
           .join(','),
       ].join('|'),
@@ -198,8 +199,8 @@ async function main() {
     for (const name of playerNames) {
       let playerId = existingPlayers.get(keyName(name));
       if (!playerId) {
-        const existing = await prisma.player.findFirst({ where: { displayName: name } });
-        const player = existing ?? (await prisma.player.create({ data: { displayName: name } }));
+        const existing = await prisma.player.findFirst({ where: { realName: name } });
+        const player = existing ?? (await prisma.player.create({ data: { realName: name } }));
         playerId = player.id;
         existingPlayers.set(keyName(name), playerId);
       }

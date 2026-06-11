@@ -7,7 +7,7 @@ const data = new SlashCommandBuilder()
   .setName('linkme')
   .setDescription('Link your Discord account to a player profile')
   .addStringOption((o) =>
-    o.setName('name').setDescription('Your player name as it appears in records').setRequired(true),
+    o.setName('name').setDescription('Your real name, as the group knows you').setRequired(true),
   );
 
 const linkme: BotCommand = {
@@ -17,7 +17,7 @@ const linkme: BotCommand = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     try {
       const player = await api.linkPlayer(
-        { displayName: name, discordUserId: interaction.user.id },
+        { realName: name, discordUserId: interaction.user.id },
         interaction.user.id,
       );
       await interaction.editReply({

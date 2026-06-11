@@ -19,8 +19,10 @@ const stats: BotCommand = {
       await interaction.editReply({ embeds: [playerStatsEmbed(playerStats)] });
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
+        const name =
+          interaction.guild?.members.cache.get(target.id)?.displayName ?? target.displayName;
         await interaction.editReply({
-          content: `No plays recorded for ${target.username} yet. Use \`/linkme\` if you log in under a different name.`,
+          content: `No plays recorded for ${name} yet. Use \`/linkme\` if you log in under a different name.`,
         });
         return;
       }

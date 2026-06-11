@@ -15,10 +15,11 @@ async function resolveRater(tx: Tx, input: UpsertRatingInput) {
   if (input.discordUserId) {
     return tx.player.upsert({
       where: { discordUserId: input.discordUserId },
-      update: {},
+      // Keep the Discord nickname fresh; realName (set via /linkme) is never touched.
+      update: input.name ? { discordName: input.name } : {},
       create: {
         discordUserId: input.discordUserId,
-        displayName: input.name ?? input.discordUserId,
+        discordName: input.name ?? null,
       },
     });
   }

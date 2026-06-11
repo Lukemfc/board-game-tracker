@@ -46,8 +46,8 @@ const suggest: BotCommand = {
           : null;
         const players = await Promise.all(
           mentionIds.map((id) =>
-            api.linkPlayer(
-              { displayName: members?.get(id)?.displayName ?? id, discordUserId: id },
+            api.resolvePlayer(
+              { discordUserId: id, discordName: members?.get(id)?.displayName },
               interaction.user.id,
             ),
           ),

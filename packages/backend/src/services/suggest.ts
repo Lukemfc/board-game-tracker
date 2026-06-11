@@ -1,6 +1,6 @@
 import type { SuggestQuery, SuggestResponse, Suggestion } from '@meeple/shared';
 import type { PlayerRecord } from '../db.js';
-import { toGameDto } from '../mappers.js';
+import { playerDisplayName, toGameDto } from '../mappers.js';
 import { prisma } from '../prisma.js';
 
 /**
@@ -232,7 +232,7 @@ export async function getSuggestions(
         daysSinceLastPlayed,
         pairingBonus,
         afterGameName: afterGame?.name,
-        neverWonNames: neverWonBonus > 0 ? neverWon.map((p) => p.displayName) : [],
+        neverWonNames: neverWonBonus > 0 ? neverWon.map((p) => playerDisplayName(p)) : [],
       }),
     };
   });

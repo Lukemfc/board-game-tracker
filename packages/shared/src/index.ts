@@ -28,7 +28,10 @@ const dateInput = z
 
 export const playerDto = z.object({
   id: z.string(),
+  /** Best name to show: realName when set, else discordName, else the Discord id. */
   displayName: z.string(),
+  realName: z.string().nullable(),
+  discordName: z.string().nullable(),
   discordUserId: z.string().nullable(),
   bggUsername: z.string().nullable(),
   createdAt: z.string(),
@@ -87,17 +90,27 @@ export const idParam = z.object({ id: nonEmpty('id') });
 export type IdParam = z.infer<typeof idParam>;
 
 export const createPlayerInput = z.object({
-  displayName: nonEmpty('displayName'),
+  realName: nonEmpty('realName'),
   discordUserId: z.string().trim().min(1).optional(),
 });
 export type CreatePlayerInput = z.infer<typeof createPlayerInput>;
 
 /** Link (or create-and-link) a Discord account to a player profile — `/linkme`. */
 export const linkPlayerInput = z.object({
-  displayName: nonEmpty('displayName'),
+  realName: nonEmpty('realName'),
   discordUserId: nonEmpty('discordUserId'),
 });
 export type LinkPlayerInput = z.infer<typeof linkPlayerInput>;
+
+/**
+ * Resolve (creating if needed) a player by Discord id, syncing the last-seen
+ * Discord nickname. Never touches realName — unlike /players/link.
+ */
+export const resolvePlayerInput = z.object({
+  discordUserId: nonEmpty('discordUserId'),
+  discordName: z.string().trim().min(1).optional(),
+});
+export type ResolvePlayerInput = z.infer<typeof resolvePlayerInput>;
 
 export const createGameInput = z.object({
   name: nonEmpty('name'),

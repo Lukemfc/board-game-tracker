@@ -12,7 +12,8 @@ datasource db {
 
 model Player {
   id              String          @id @default(cuid())
-  displayName     String
+  realName        String? // the person's actual name — preferred everywhere we show a name
+  discordName     String? // last-seen Discord server nickname; auto-synced, never shown once realName is set
   discordUserId   String?         @unique
   bggUsername     String?         @unique // BGG username, for collection import
   createdAt       DateTime        @default(now())

@@ -1,9 +1,16 @@
 import type { GameDto, LocationDto, PlayerDto, SessionDto } from '@meeple/shared';
 import type { GameRecord, LocationRecord, PlayerRecord, SessionWithRelations } from './db.js';
 
+/** Best name to show for a player: real name, else Discord nickname, else Discord id. */
+export const playerDisplayName = (
+  p: Pick<PlayerRecord, 'realName' | 'discordName' | 'discordUserId'>,
+): string => p.realName ?? p.discordName ?? p.discordUserId ?? 'Unknown';
+
 export const toPlayerDto = (p: PlayerRecord): PlayerDto => ({
   id: p.id,
-  displayName: p.displayName,
+  displayName: playerDisplayName(p),
+  realName: p.realName,
+  discordName: p.discordName,
   discordUserId: p.discordUserId,
   bggUsername: p.bggUsername,
   createdAt: p.createdAt.toISOString(),

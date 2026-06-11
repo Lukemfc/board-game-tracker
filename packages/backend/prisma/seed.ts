@@ -11,18 +11,18 @@ async function main() {
     prisma.player.upsert({
       where: { discordUserId: 'seed-alice' },
       update: {},
-      create: { displayName: 'Alice', discordUserId: 'seed-alice' },
+      create: { realName: 'Alice', discordUserId: 'seed-alice' },
     }),
     prisma.player.upsert({
       where: { discordUserId: 'seed-bob' },
       update: {},
-      create: { displayName: 'Bob', discordUserId: 'seed-bob' },
+      create: { realName: 'Bob', discordUserId: 'seed-bob' },
     }),
     // A "ghost" player with no Discord account.
     prisma.player.upsert({
       where: { id: 'seed-carol-fixed-id' },
       update: {},
-      create: { id: 'seed-carol-fixed-id', displayName: 'Carol' },
+      create: { id: 'seed-carol-fixed-id', realName: 'Carol' },
     }),
   ]);
 

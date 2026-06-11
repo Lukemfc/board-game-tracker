@@ -122,7 +122,7 @@ export function bggImportEmbed(result: BggImportResult): EmbedBuilder {
 }
 
 export function playersEmbed(
-  players: { displayName: string; discordUserId: string | null }[],
+  players: { displayName: string; realName: string | null; discordUserId: string | null }[],
 ): EmbedBuilder {
   const embed = new EmbedBuilder().setColor(COLOR).setTitle('🧑‍🤝‍🧑 Players');
   if (players.length === 0) {
@@ -130,7 +130,14 @@ export function playersEmbed(
   }
   return embed.setDescription(
     players
-      .map((p) => `• ${p.displayName}${p.discordUserId ? '' : ' _(no Discord link)_'}`)
+      .map((p) => {
+        const flag = !p.discordUserId
+          ? ' _(no Discord link)_'
+          : p.realName
+            ? ''
+            : ' _(no real name — use `/linkme`)_';
+        return `• ${p.displayName}${flag}`;
+      })
       .join('\n'),
   );
 }

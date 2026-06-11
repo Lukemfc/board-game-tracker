@@ -1,4 +1,4 @@
-import type { LinkPlayerInput } from '@meeple/shared';
+import type { LinkPlayerInput, ResolvePlayerInput } from '@meeple/shared';
 import type { PlayerRecord } from '../db.js';
 import { badRequest, notFound } from '../errors.js';
 import { prisma } from '../prisma.js';
@@ -7,26 +7,41 @@ import { collectionExists } from './bgg.js';
 
 /**
  * Link a Discord account to a player profile (`/linkme`):
- *  - if the Discord id is already linked, update that player's display name;
+ *  - if the Discord id is already linked, update that player's real name;
  *  - else if a ghost player (no Discord id) has the same name, attach the id;
  *  - else create a new linked player.
  */
 export async function linkPlayer({
-  displayName,
+  realName,
   discordUserId,
 }: LinkPlayerInput): Promise<PlayerRecord> {
   return prisma.$transaction(async (tx) => {
     const linked = await tx.player.findUnique({ where: { discordUserId } });
     if (linked) {
-      return tx.player.update({ where: { id: linked.id }, data: { displayName } });
+      return tx.player.update({ where: { id: linked.id }, data: { realName } });
     }
 
-    const ghost = await tx.player.findFirst({ where: { displayName, discordUserId: null } });
+    const ghost = await tx.player.findFirst({ where: { realName, discordUserId: null } });
     if (ghost) {
       return tx.player.update({ where: { id: ghost.id }, data: { discordUserId } });
     }
 
-    return tx.player.create({ data: { displayName, discordUserId } });
+    return tx.player.create({ data: { realName, discordUserId } });
+  });
+}
+
+/**
+ * Resolve (creating if needed) a player by Discord id, keeping the last-seen
+ * Discord nickname fresh. Never touches realName.
+ */
+export async function resolvePlayer({
+  discordUserId,
+  discordName,
+}: ResolvePlayerInput): Promise<PlayerRecord> {
+  return prisma.player.upsert({
+    where: { discordUserId },
+    update: discordName ? { discordName } : {},
+    create: { discordUserId, discordName: discordName ?? null },
   });
 }
 
