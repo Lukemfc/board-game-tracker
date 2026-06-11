@@ -23,12 +23,12 @@ export interface SuggestWeights {
 }
 
 /**
- * Shipped defaults. Per the phasing plan in docs/features/game-ratings.md,
- * `rating` starts at 0 (affinity-only) until ratings have accumulated over a
- * few game nights — raise it to 0.5 to switch the blend on. No other change
- * needed.
+ * Shipped defaults. Per docs/features/game-ratings.md, `rating` was phased in:
+ * it shipped at 0 (affinity-only) and was raised to 0.5 once the group had
+ * accumulated ratings. With both weights at 0.5 the multiplier's natural range
+ * lands exactly on its [0.5, 2.0] clamp bounds.
  */
-export const DEFAULT_WEIGHTS: SuggestWeights = { affinity: 0.5, rating: 0, pairing: 25 };
+export const DEFAULT_WEIGHTS: SuggestWeights = { affinity: 0.5, rating: 0.5, pairing: 25 };
 
 const MS_PER_DAY = 86_400_000;
 /** Affinity of a play halves every ~6 months — "favourite" means *currently* beloved. */
