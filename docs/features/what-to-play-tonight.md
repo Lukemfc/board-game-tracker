@@ -33,10 +33,10 @@ The trick is to make "favourite" interact with "due-ness" rather than override i
 /suggest [players:@alice @bob @charlie] [count:4] [after:<game>]
 ```
 
-| Option    | Type           | Required | Description                                                                                  |
-| --------- | -------------- | -------- | -------------------------------------------------------------------------------------------- |
-| `players` | Mention string | No       | Who's playing tonight. If omitted, uses the full player roster.                              |
-| `count`   | Integer (1–6)  | No       | Number of suggestions to return. Default 3.                                                  |
+| Option    | Type           | Required | Description                                                                                           |
+| --------- | -------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `players` | Mention string | No       | Who's playing tonight. If omitted, uses the full player roster.                                       |
+| `count`   | Integer (1–6)  | No       | Number of suggestions to return. Default 3.                                                           |
 | `after`   | String         | No       | A game you've just finished (autocomplete from the catalogue). Surfaces games that pair well with it. |
 
 The command replies with a public embed listing the top suggestions, each with a one-line reason.
@@ -52,7 +52,7 @@ GET /stats/suggest?playerCount=<n>&playerIds=<id1,id2,...>&afterGameId=<id>&limi
 | Query param   | Required | Description                                                                                                    |
 | ------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
 | `playerCount` | No       | Filter by player count (uses `minPlayers`/`maxPlayers` on Game). Falls back to `playerIds` length if provided. |
-| `playerIds`   | No       | Comma-separated Player IDs. Used for the favourite signal, recency, and never-won checks (all group-scoped).    |
+| `playerIds`   | No       | Comma-separated Player IDs. Used for the favourite signal, recency, and never-won checks (all group-scoped).   |
 | `afterGameId` | No       | A game just played. Adds a pairing bonus to games that historically follow it. Omit to skip pairing.           |
 | `limit`       | No       | Number of results to return. Default 5.                                                                        |
 
@@ -119,7 +119,7 @@ recencyScore = min(daysSinceLastPlayed, 180) / 180 * 100
 
 - A game played today scores 0. A game not played for 6+ months scores 100. Never-played games are treated as 365 days.
 
-> **Amended:** the [Game Enjoyment Ratings](game-ratings.md) feature **blends** a stated-preference rating signal into this multiplier, producing a combined `preferenceMultiplier` (0.5–2.0). Affinity (described below) is kept as-is and remains boost-only; the rating term is added on top and, being centred, can also push a game *below* 1.0 to suppress disliked games. The mechanic (a multiplier that scales recency) is unchanged.
+> **Amended:** the [Game Enjoyment Ratings](game-ratings.md) feature **blends** a stated-preference rating signal into this multiplier, producing a combined `preferenceMultiplier` (0.5–2.0). Affinity (described below) is kept as-is and remains boost-only; the rating term is added on top and, being centred, can also push a game _below_ 1.0 to suppress disliked games. The mechanic (a multiplier that scales recency) is unchanged.
 
 **Favourite multiplier** (1.0–2.0): The revealed-preference signal. Games the group freely returns to get their due-ness amplified; games they rarely choose are left at face value.
 
@@ -129,7 +129,7 @@ affinityNorm = affinity / (max affinity across the catalogue, for this group)   
 favouriteMultiplier = 1 + FAVOURITE_WEIGHT * affinityNorm                        // FAVOURITE_WEIGHT = 1.0
 ```
 
-- Each past play contributes weight that **halves every ~180 days**, so a game the group has chosen a lot *recently* counts as a stronger favourite than one they binged years ago and dropped. This keeps "favourite" meaning _currently beloved_, not _historically over-played_.
+- Each past play contributes weight that **halves every ~180 days**, so a game the group has chosen a lot _recently_ counts as a stronger favourite than one they binged years ago and dropped. This keeps "favourite" meaning _currently beloved_, not _historically over-played_.
 - The top favourite gets up to a **2× boost** to its due-ness; a never-chosen game gets 1× (no boost). Crucially the multiplier scales recency, so a favourite played yesterday still scores near zero — we don't re-suggest what we just played.
 - `FAVOURITE_WEIGHT` is a single tunable knob for how hard the engine leans on favourites vs. exploration.
 

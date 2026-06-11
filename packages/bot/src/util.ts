@@ -50,5 +50,7 @@ export async function gameLocationAutocomplete(
     .slice(0, 25);
   // Discord hard-rejects the entire response if any choice exceeds 100 chars,
   // so clamp defensively — one long name must not blank out every suggestion.
-  await interaction.respond(filtered.map((c) => ({ name: c.slice(0, 100), value: c.slice(0, 100) })));
+  await interaction.respond(
+    filtered.map((c) => ({ name: c.slice(0, 100), value: c.slice(0, 100) })),
+  );
 }

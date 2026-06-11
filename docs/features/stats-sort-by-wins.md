@@ -47,10 +47,10 @@ const byGame = [...byGameMap.values()]
   .map((e) => ({ game: toGameDto(e.game), plays: e.plays, wins: e.wins }))
   .sort(
     (a, b) =>
-      b.wins - a.wins ||                       // most wins first
-      b.wins / b.plays - a.wins / a.plays ||    // then better win rate
-      b.plays - a.plays ||                      // then more plays
-      a.game.name.localeCompare(b.game.name),   // then alphabetical
+      b.wins - a.wins || // most wins first
+      b.wins / b.plays - a.wins / a.plays || // then better win rate
+      b.plays - a.plays || // then more plays
+      a.game.name.localeCompare(b.game.name), // then alphabetical
   );
 ```
 
@@ -84,5 +84,5 @@ No API/shape change: `PlayerStats.byGame` keeps the same `{ game, plays, wins }`
 
 ## Notes & decisions
 
-- **Wins, not win rate, as the primary sort.** The request was explicit: order by *number of wins*. Win rate is only a tie-breaker. (A pure win-rate sort would crown a 1-from-1 fluke over an 8-from-12 mainstay — not what's wanted here.)
+- **Wins, not win rate, as the primary sort.** The request was explicit: order by _number of wins_. Win rate is only a tie-breaker. (A pure win-rate sort would crown a 1-from-1 fluke over an 8-from-12 mainstay — not what's wanted here.)
 - **No new data needed.** `wins` is already aggregated per game; this is purely presentational.
