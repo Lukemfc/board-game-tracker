@@ -295,6 +295,33 @@ export const gameStats = z.object({
 export type GameStats = z.infer<typeof gameStats>;
 
 // ---------------------------------------------------------------------------
+// Suggestions — "what should we play tonight?"
+// ---------------------------------------------------------------------------
+
+/** Query for `GET /stats/suggest`. See docs/features/what-to-play-tonight.md. */
+export const suggestQuery = z.object({
+  /** Filter by player count; falls back to the number of `playerIds` if given. */
+  playerCount: z.coerce.number().int().positive().optional(),
+  /** Comma-separated Player ids — scopes affinity, ratings, and never-won checks. */
+  playerIds: z.string().trim().min(1).optional(),
+  /** A game just played; adds a pairing bonus to games that historically follow it. */
+  afterGameId: z.string().trim().min(1).optional(),
+  limit: z.coerce.number().int().positive().max(20).default(5),
+});
+export type SuggestQuery = z.infer<typeof suggestQuery>;
+
+/** One suggested game with its (internal) score and human-readable reasons. */
+export const suggestion = z.object({
+  game: gameDto,
+  score: z.number(),
+  reasons: z.array(z.string()).min(1),
+});
+export type Suggestion = z.infer<typeof suggestion>;
+
+export const suggestResponse = z.object({ suggestions: z.array(suggestion) });
+export type SuggestResponse = z.infer<typeof suggestResponse>;
+
+// ---------------------------------------------------------------------------
 // Ratings
 // ---------------------------------------------------------------------------
 

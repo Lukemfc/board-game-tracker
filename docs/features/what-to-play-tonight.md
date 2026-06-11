@@ -1,6 +1,6 @@
 # Feature: What Should We Play Tonight?
 
-**Status:** Planned  
+**Status:** Done — shipped with `RATING_WEIGHT = 0` (affinity-only) per the phasing note; raise the knob in `packages/backend/src/services/suggest.ts` to blend ratings in.  
 **Priority:** Medium  
 **Tracker:** [FEATURE-TRACKER.md](../FEATURE-TRACKER.md)
 
@@ -54,12 +54,12 @@ The command replies with a public embed listing the top suggestions, each with a
 GET /stats/suggest?playerCount=<n>&playerIds=<id1,id2,...>&afterGameId=<id>&limit=<n>
 ```
 
-| Query param   | Required | Description                                                                                                    |
-| ------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `playerCount` | No       | Filter by player count (uses `minPlayers`/`maxPlayers` on Game). Falls back to `playerIds` length if provided. |
+| Query param   | Required | Description                                                                                                                        |
+| ------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `playerCount` | No       | Filter by player count (uses `minPlayers`/`maxPlayers` on Game). Falls back to `playerIds` length if provided.                     |
 | `playerIds`   | No       | Comma-separated Player IDs. Used for the preference signal (affinity + ratings), recency, and never-won checks (all group-scoped). |
-| `afterGameId` | No       | A game just played. Adds a pairing bonus to games that historically follow it. Omit to skip pairing.           |
-| `limit`       | No       | Number of results to return. Default 5.                                                                        |
+| `afterGameId` | No       | A game just played. Adds a pairing bonus to games that historically follow it. Omit to skip pairing.                               |
+| `limit`       | No       | Number of results to return. Default 5.                                                                                            |
 
 **Response:**
 

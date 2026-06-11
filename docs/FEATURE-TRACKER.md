@@ -7,12 +7,10 @@ A living index of feature ideas. Each entry links to a detailed spec in `docs/fe
 
 ## Active (planned, ready to build)
 
-| Feature                             | Priority | Spec                                                        | Notes                                                                                  |
-| ----------------------------------- | -------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| BGG Integration                     | High     | [bgg-integration.md](features/bgg-integration.md)           | Search BGG when adding games; link BGG username to import collection                   |
-| Edit / Delete Sessions from Discord | High     | [edit-delete-sessions.md](features/edit-delete-sessions.md) | Backend routes already exist; bot commands needed                                      |
-| What Should We Play Tonight?        | Medium   | [what-to-play-tonight.md](features/what-to-play-tonight.md) | `/suggest` command — recency, player count, variety scoring                            |
-| Game Enjoyment Ratings              | Medium   | [game-ratings.md](features/game-ratings.md)                 | `/rate` + `/gameratings` + ratings API shipped; `/suggest` blend waits on What-To-Play |
+| Feature                             | Priority | Spec                                                        | Notes                                                                |
+| ----------------------------------- | -------- | ----------------------------------------------------------- | -------------------------------------------------------------------- |
+| BGG Integration                     | High     | [bgg-integration.md](features/bgg-integration.md)           | Search BGG when adding games; link BGG username to import collection |
+| Edit / Delete Sessions from Discord | High     | [edit-delete-sessions.md](features/edit-delete-sessions.md) | Backend routes already exist; bot commands needed                    |
 
 ---
 
@@ -34,10 +32,12 @@ A living index of feature ideas. Each entry links to a detailed spec in `docs/fe
 
 ## Done
 
-| Feature                        | Completed | Notes                                         |
-| ------------------------------ | --------- | --------------------------------------------- |
-| Core API (CRUD + stats)        | M2        | All endpoints live                            |
-| Discord bot MVP                | M3        | 8 slash commands                              |
-| Historical data import         | M4        | Excel → Postgres via import script            |
-| Leaderboard & per-player stats | M5        | `/leaderboard`, `/stats` commands             |
-| Sort `/stats` by wins          | —         | "By game" list ordered by wins, then win rate |
+| Feature                        | Completed | Notes                                                                                                                                                   |
+| ------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core API (CRUD + stats)        | M2        | All endpoints live                                                                                                                                      |
+| Discord bot MVP                | M3        | 8 slash commands                                                                                                                                        |
+| Historical data import         | M4        | Excel → Postgres via import script                                                                                                                      |
+| Leaderboard & per-player stats | M5        | `/leaderboard`, `/stats` commands                                                                                                                       |
+| Sort `/stats` by wins          | —         | "By game" list ordered by wins, then win rate                                                                                                           |
+| Game Enjoyment Ratings         | —         | `/rate`, `/ratemany`, `/gameratings` + ratings API; blend wired into `/suggest`                                                                         |
+| What Should We Play Tonight?   | —         | `/suggest` + `GET /stats/suggest` — affinity/rating blend ships with `RATING_WEIGHT = 0` (raise the knob in `services/suggest.ts` to switch ratings on) |

@@ -5,6 +5,7 @@ import type {
   LeaderboardEntry,
   PlayerStats,
   SessionDto,
+  Suggestion,
 } from '@meeple/shared';
 import { EmbedBuilder } from 'discord.js';
 
@@ -201,6 +202,27 @@ export function rateManyEmbed(
     .setDescription(`How much do you enjoy **${game.name}**?\nTap a star, or skip it.`)
     .setFooter({ text: `Game ${index + 1} of ${total} · ${rated} rated · ${skipped} skipped` });
   if (game.bggThumbnail) embed.setThumbnail(game.bggThumbnail);
+  return embed;
+}
+
+/** Tonight's `/suggest` picks — numbered, each with its one-line reasons. */
+export function suggestionsEmbed(
+  suggestions: Suggestion[],
+  opts: { playerCount?: number; afterName?: string } = {},
+): EmbedBuilder {
+  const who = opts.playerCount
+    ? ` (${opts.playerCount} player${opts.playerCount === 1 ? '' : 's'})`
+    : '';
+  const embed = new EmbedBuilder().setColor(COLOR).setTitle(`🎲 Tonight's suggestions${who}`);
+
+  const lines = suggestions.map(
+    (s, i) => `**${i + 1}. ${s.game.name}**\n→ ${s.reasons.join(' • ')}`,
+  );
+  embed.setDescription(`${lines.join('\n\n')}\n\nReact with 🎲 on the one you want to play!`);
+
+  const thumbnail = suggestions[0]?.game.bggThumbnail;
+  if (thumbnail) embed.setThumbnail(thumbnail);
+  if (opts.afterName) embed.setFooter({ text: `Paired with what follows ${opts.afterName}.` });
   return embed;
 }
 

@@ -1,7 +1,16 @@
-import { gameStats, idParam, leaderboard, leaderboardQuery, playerStats } from '@meeple/shared';
+import {
+  gameStats,
+  idParam,
+  leaderboard,
+  leaderboardQuery,
+  playerStats,
+  suggestQuery,
+  suggestResponse,
+} from '@meeple/shared';
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { getGameStats, getLeaderboard, getPlayerStats } from '../services/stats.js';
+import { getSuggestions } from '../services/suggest.js';
 
 export default async function statsRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -10,6 +19,13 @@ export default async function statsRoutes(fastify: FastifyInstance): Promise<voi
     '/leaderboard',
     { schema: { querystring: leaderboardQuery, response: { 200: leaderboard } } },
     async (req) => getLeaderboard(req.query.limit),
+  );
+
+  // "What should we play tonight?" — drives the bot's /suggest command.
+  app.get(
+    '/suggest',
+    { schema: { querystring: suggestQuery, response: { 200: suggestResponse } } },
+    async (req) => getSuggestions(req.query),
   );
 
   app.get(

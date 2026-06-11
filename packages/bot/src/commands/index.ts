@@ -15,6 +15,7 @@ import ratemany from './ratemany.js';
 import recent from './recent.js';
 import renamegame from './renamegame.js';
 import stats from './stats.js';
+import suggest from './suggest.js';
 
 export const commands: BotCommand[] = [
   logplay,
@@ -33,4 +34,5 @@ export const commands: BotCommand[] = [
   rate,
   ratemany,
   gameratings,
+  suggest,
 ];

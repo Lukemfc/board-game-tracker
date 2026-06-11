@@ -26,6 +26,8 @@ import {
   type SessionDto,
   sessionDto,
   sessionList,
+  type SuggestResponse,
+  suggestResponse,
   type UpdateSessionInput,
   type UpsertRatingResult,
   upsertRatingResult,
@@ -208,6 +210,20 @@ class ApiClient {
 
   getPlayerStats(idOrDiscordId: string): Promise<PlayerStats> {
     return this.request(playerStats, `/stats/players/${encodeURIComponent(idOrDiscordId)}`);
+  }
+
+  getSuggestions(params: {
+    playerIds?: string[];
+    afterGameId?: string;
+    limit?: number;
+  }): Promise<SuggestResponse> {
+    return this.request(suggestResponse, '/stats/suggest', {
+      query: {
+        playerIds: params.playerIds?.length ? params.playerIds.join(',') : undefined,
+        afterGameId: params.afterGameId,
+        limit: params.limit,
+      },
+    });
   }
 
   rateGame(
