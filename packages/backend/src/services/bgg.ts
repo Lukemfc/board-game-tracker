@@ -75,14 +75,14 @@ function attr(node: XmlNode, name: string): string | undefined {
   return undefined;
 }
 
-/** Read the text content of a node, whether it's a bare string or `{ '#text' }`. */
+/** Read the text content of a node: bare string/number or `{ '#text' }`. */
 function text(node: XmlNode): string | undefined {
-  if (typeof node === 'string') return node;
-  if (node && typeof node === 'object') {
+  if (node == null) return undefined;
+  if (typeof node === 'object') {
     const v = (node as Record<string, unknown>)['#text'];
     return v == null ? undefined : String(v);
   }
-  return undefined;
+  return String(node);
 }
 
 function toInt(v: string | undefined): number | null {
@@ -264,8 +264,10 @@ export async function getCollection(username: string): Promise<BggSearchResult[]
     );
   }
 
+  // The collection feed's root element is <items totalitems="…"> (not
+  // <collection>), and yearpublished is element text, not a value attribute.
   const items = ensureArray(
-    (parsed.collection as Record<string, unknown> | undefined)?.item as XmlNode,
+    (parsed.items as Record<string, unknown> | undefined)?.item as XmlNode,
   );
   const results: BggSearchResult[] = [];
   for (const item of items) {
@@ -276,7 +278,7 @@ export async function getCollection(username: string): Promise<BggSearchResult[]
     results.push({
       bggId,
       name,
-      yearPublished: toInt(attr(obj.yearpublished as XmlNode, 'value')),
+      yearPublished: toInt(text(obj.yearpublished as XmlNode)),
     });
   }
   return results;
