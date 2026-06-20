@@ -35,6 +35,12 @@ export function sessionEmbed(s: SessionDto): EmbedBuilder {
   return embed;
 }
 
+/** "👑 Alice, Bob" for a session's winners, or a "no winner" note when none. */
+function winnersLabel(s: SessionDto): string {
+  const winners = s.players.filter((p) => p.isWinner).map((p) => p.player.displayName);
+  return winners.length ? `👑 ${winners.join(', ')}` : '_(no winner recorded)_';
+}
+
 export function recentEmbed(sessions: SessionDto[]): EmbedBuilder {
   const embed = new EmbedBuilder().setColor(COLOR).setTitle('🕑 Recent plays');
   if (sessions.length === 0) {
@@ -50,6 +56,41 @@ export function recentEmbed(sessions: SessionDto[]): EmbedBuilder {
       .join('\n'),
   );
   return embed;
+}
+
+/**
+ * A single game's full play history — a chronological log of date · winner lines.
+ * The game name lives in the title (not each line, where it'd be redundant).
+ */
+export function gameHistoryEmbed(game: string, sessions: SessionDto[]): EmbedBuilder {
+  const embed = new EmbedBuilder().setColor(COLOR);
+  if (sessions.length === 0) {
+    return embed
+      .setTitle(`🎲 ${game}`)
+      .setDescription(`No plays of **${game}** logged yet.`);
+  }
+
+  // Prefer the catalogue name from the data — the user's input may be an id or oddly-cased.
+  const name = sessions[0]?.game.name ?? game;
+  embed.setTitle(`🎲 ${name} — ${sessions.length} play${sessions.length === 1 ? '' : 's'}`);
+
+  const lines = sessions.map((s) => `**${day(s.playedOn)}** · ${winnersLabel(s)}`);
+
+  // Guard Discord's 4096-char description limit: truncate and note the remainder.
+  const LIMIT = 4096;
+  let description = lines.join('\n');
+  if (description.length > LIMIT) {
+    const kept: string[] = [];
+    let length = 0;
+    for (const line of lines) {
+      const footer = `\n…and ${sessions.length - kept.length} earlier plays`;
+      if (length + line.length + 1 + footer.length > LIMIT) break;
+      kept.push(line);
+      length += line.length + 1;
+    }
+    description = `${kept.join('\n')}\n…and ${sessions.length - kept.length} earlier plays`;
+  }
+  return embed.setDescription(description);
 }
 
 /** A single game's details — used after adding/enriching via BGG. */
